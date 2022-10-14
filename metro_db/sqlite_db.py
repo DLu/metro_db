@@ -27,6 +27,12 @@ class SQLiteDB:
     """Core database structure that handles base sqlite3 interactions"""
 
     def __init__(self, database_path, default_type='TEXT', primary_keys=['id']):
+        """
+        Args:
+            database_path (pathlib.Path): File to store the data
+            default_type (str): The default SQL type to use
+            primary_keys (list of strings): Fields that should automatically be marked as primary keys
+        """
         self.raw_db = sqlite3.connect(str(database_path), detect_types=sqlite3.PARSE_DECLTYPES)
         self.path = database_path
         self.raw_db.row_factory = Row
@@ -43,10 +49,11 @@ class SQLiteDB:
     def register_custom_type(self, name, type_, adapter_fn, converter_fn):
         """Register a non-standard datatype.
 
-        name is a string for the name used
-        type_ is the Python type
-        adapter_fn is a function for translating the actual type to the sqlite3 type
-        converter_fn is a function for translating the sqlite3 to the actual type
+        Args:
+            name (str): The name of the custom type
+            type_ (class): Python type
+            adapter_fn (function): Translates the Python type to the sqlite3 type
+            converter_fn (function): Translates the sqlite3 to the Python type
         """
         self.adapters[name] = adapter_fn
         self.converters[name] = converter_fn
@@ -54,14 +61,25 @@ class SQLiteDB:
         sqlite3.register_converter(name, converter_fn)
 
     def register_custom_enum(self, custom_enum_class):
-        """Register an IntEnum"""
+        """Register an IntEnum
+
+        Args:
+            custom_enum_class (IntEnum): Class type of enum to register
+        """
         self.register_custom_type(custom_enum_class.__name__,
                                   custom_enum_class,
                                   lambda d: d.value,
                                   lambda v: custom_enum_class(int(v)))
 
     def query_one(self, query):
-        """Run the specified query and return result dictionary."""
+        """Run the specified query and return the first result
+
+        Args:
+            query (str): SQL query to execute
+
+        Returns:
+            Row or None: The result of the query
+        """
         try:
             cursor = self.raw_db.cursor()
             cursor.execute(query)
@@ -70,27 +88,44 @@ class SQLiteDB:
             raise DatabaseError(str(e), query) from None
 
     def query(self, query):
-        """Run the specified query and return all the rows (as dictionaries)."""
+        """Run the specified query and return the results
+
+        Args:
+            query (str): SQL query to execute
+
+        Returns:
+            Iterator(Row): The results of the query
+        """
         try:
             cursor = self.raw_db.cursor()
             yield from cursor.execute(query)
         except sqlite3.OperationalError as e:
             raise DatabaseError(str(e), query) from None
 
-    def execute(self, command, params=None):
-        """Execute the given command with the parameters. Return nothing."""
+    def execute(self, command, params=()):
+        """Execute the given command with the parameters. Returns the cursor
+
+        Args:
+            command (str): SQL command to execute
+            params (tuple): values to substitute into the placeholders
+
+        Returns:
+            Cursor: sqlite3 cursor for getting additional info like lastrowid
+        """
         try:
             cur = self.raw_db.cursor()
-            if params is None:
-                cur.execute(command)
-            else:
-                cur.execute(command, params)
+            cur.execute(command, params)
             return cur
         except sqlite3.Error as e:
             raise DatabaseError(str(e), command, params) from None
 
     def execute_many(self, command, objects):
-        """Execute the given command multiple times. Return nothing."""
+        """Execute the given command multiple times.
+
+        Args:
+            command (str): SQL command to execute
+            objects (list of tuples): The given command is run for each object/set of placeholder values
+        """
         try:
             self.raw_db.executemany(command, objects)
         except sqlite3.Error as e:
@@ -99,7 +134,12 @@ class SQLiteDB:
     def get_field_type(self, field, full=False):
         """Return a string representing the type of a given field.
 
-        If full is True, it returns other elements of the column definition
+        Args:
+            field (str): The name of the field
+            full (bool): If True, it returns other elements that would be used in the column definition
+                         (i.e. PRIMARY KEY)
+        Returns:
+            str: SQL type for the given field
         """
         base = self.field_types.get(field, self.default_type)
         if base in self.converters:
@@ -115,7 +155,14 @@ class SQLiteDB:
             return sql_type + ' PRIMARY KEY'
 
     def get_sql_table_types(self, table):
-        """Create a dictionary mapping the name of each field in the table to its type in the actual db"""
+        """Create a dictionary mapping the name of each field in the table to its type in the actual db
+
+        Args:
+            table (str): Name of the table to get information about
+
+        Returns:
+            dict[str/str]: a mapping from field name to sql
+        """
         type_map = {}
         for row in self.query(f'PRAGMA table_info("{table}")'):
             type_map[row['name']] = row['type']
@@ -136,6 +183,12 @@ class SQLiteDB:
             self.q_strings[n] = ', '.join(['?'] * n)
 
     def create_table(self, table, keys):
+        """Create a table with the given name and fields
+
+        Args:
+            table (str): Name of the table
+            keys (str[]): Names of the fields
+        """
         types = []
         for key in keys:
             tt = self.get_field_type(key, full=True)
@@ -144,6 +197,13 @@ class SQLiteDB:
         self.execute(f'CREATE TABLE {table} ({type_s})')
 
     def update_table(self, table, keys, field_mappings={}):
+        """Update a table to have the given keys while preserving the data.
+
+        Args:
+            table (str): Name of the table
+            keys (str[]): Keys that the table should have after this operation
+            field_mappings (dict[str/str]): Mapping of new field names to old field names.
+        """
         self.tables[table] = keys
         type_map = self.get_sql_table_types(table)
 
@@ -187,6 +247,7 @@ class SQLiteDB:
         self.execute(f'DROP TABLE {temp_table_name}')
 
     def infer_database_structure(self):
+        """Use the existing database entries to infer the tables and field_types"""
         for table in self.lookup_all('name', 'sqlite_master', "WHERE type='table'"):
             type_dict = self.get_sql_table_types(table)
             self.tables[table] = list(type_dict.keys())
@@ -199,7 +260,11 @@ class SQLiteDB:
     from ._queries import format_value, generate_clause, sum, update
 
     def reset(self, table=None):
-        """Clear all or some of the data out of the database and recreate the table(s)."""
+        """Clear all or some of the data out of the database and recreate the table(s).
+
+        Args:
+            table (str/None): If specified, the name of the table to reset. Otherwise, all tables are reset.
+        """
         db = self.raw_db.cursor()
         if table is None:
             tables = list(self.tables.keys())
@@ -216,13 +281,22 @@ class SQLiteDB:
         self.raw_db.commit()
 
     def close(self, print_table_sizes=True):
-        """Write data to database. Possibly print the number of rows in each table."""
+        """Write data to database. Possibly print the number of rows in each table.
+
+        Args:
+            print_table_sizes (bool): Whether to print the table sizes
+        """
         if print_table_sizes:
             print(self)
         self.write()
         self.raw_db.close()
 
     def __repr__(self):
+        """String representing the number of rows in each table.
+
+        Returns:
+            str: the name and size of each table on its own row
+        """
         s = ''
         for table in self.tables:
             s += f'{table}({self.count(table)})\n'
