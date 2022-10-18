@@ -15,5 +15,6 @@ extensions = [
 ]
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'classic'
+html_theme = 'scrolls'
 autoclass_content = 'both'
+html_static_path = ['_static']
