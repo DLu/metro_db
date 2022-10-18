@@ -1,20 +1,7 @@
-metro\_db package
-=================
+MetroDB Class
+=============
 
-
-sqlite\_db module
----------------------------
-
-.. automodule:: metro_db.sqlite_db
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-metro\_db module
---------------------------
-
-.. automodule:: metro_db.metro_db
+.. autoclass:: metro_db.metro_db.MetroDB
    :members:
    :undoc-members:
    :show-inheritance:
