@@ -9,6 +9,7 @@ extra_test = [
 
 setup(
     name='metro_db',
+    description='A wrapper around the sqlite3 database for easy database development',
     version=__version__,
     url='https://github.com/DLu/metro_db',
     author='David V. Lu!!',
@@ -26,4 +27,10 @@ setup(
     extras_require={
         'dev': extra_test,
     },
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Topic :: Database',
+    ],
 )
