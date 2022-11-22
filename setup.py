@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from metro_db import __version__
+from metro_db.version import __version__
 
 extra_test = [
     'pytest>=4',
