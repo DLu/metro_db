@@ -7,3 +7,5 @@ before_install:
 install:
   - pip install ".[dev]" .
 script: pytest --capture=no -vv
+after_success:
+  - pytest --cov-report term-missing --cov
