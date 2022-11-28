@@ -178,6 +178,9 @@ class SQLiteDB:
             else:
                 self.update_table(table, keys)
 
+        if not self.tables:
+            return
+
         # Cache strings consisting of a number of comma separated question marks
         for n in range(1, max(len(k) for k in self.tables.values()) + 1):
             self.q_strings[n] = ', '.join(['?'] * n)
