@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
 
-from metro_db import __version__
-
 extra_test = [
     'pytest>=4',
     'pytest-cov>=2',
@@ -9,12 +7,14 @@ extra_test = [
 
 setup(
     name='metro_db',
-    version=__version__,
+    description='A wrapper around the sqlite3 database for easy database development',
+    version='v0.1.0',
     url='https://github.com/DLu/metro_db',
     author='David V. Lu!!',
     author_email='davidvlu@gmail.com',
     packages=find_packages(),
     install_requires=[
+        'pyyaml',
         'tabulate',
     ],
     entry_points={
@@ -25,4 +25,10 @@ setup(
     extras_require={
         'dev': extra_test,
     },
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Topic :: Database',
+    ],
 )

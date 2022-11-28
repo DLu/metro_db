@@ -1,3 +1,4 @@
 metro_db.egg-info
 .pytest_cache/
 .coverage
+dist/
