@@ -7,6 +7,7 @@ Welcome to MetroDB's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   tutorials
    api
 
 Indices and tables

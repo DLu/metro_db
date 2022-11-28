@@ -12,6 +12,7 @@ author = 'David V. Lu!!'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'myst_parser',
 ]
 
 # -- Options for HTML output -------------------------------------------------
