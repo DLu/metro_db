@@ -41,6 +41,7 @@ class SQLiteDB:
         self.field_types = {}
         self.default_type = default_type
         self.primary_keys = list(primary_keys)
+        self.primary_key_per_table = {}
         self.adapters = {}
         self.converters = {}
         self.register_custom_type('bool', bool, int, lambda v: bool(int(v)))
@@ -170,6 +171,7 @@ class SQLiteDB:
 
     def update_database_structure(self):
         """Create or update the structure of all tables."""
+        self.primary_key_per_table = {}
         for table, keys in self.tables.items():
             # Check if table exists
             table_exists = self.count('sqlite_master', f"WHERE type='table' AND name='{table}'") > 0
@@ -177,6 +179,11 @@ class SQLiteDB:
                 self.create_table(table, keys)
             else:
                 self.update_table(table, keys)
+
+            # Save primary key
+            for key in keys:
+                if key in self.primary_keys:
+                    self.primary_key_per_table[table] = key
 
         if not self.tables:
             return

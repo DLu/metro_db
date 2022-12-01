@@ -128,3 +128,33 @@ def test_update(demo_db):
     assert demo_db.count('batters') == 10
     assert row_id == b_id
     assert demo_db.lookup('hits', 'batters', {'name': 'Zeile'}) == 4
+
+
+def test_all_field_update():
+    path = pathlib.Path('all_field.db')
+    db = SQLiteDB(path, default_type='int')
+    db.tables['batters'] = ['name', 'year', 'position']
+    db.field_types['name'] = 'text'
+    db.field_types['position'] = 'Position'
+    db.register_custom_enum(Position)
+    db.update_database_structure()
+    for values in [
+        ['Olerud', 1998, Position.FIRST_BASE],
+        ['Piazza', 1998, Position.CATCHER],
+        ['Alfonzo', 1998, Position.THIRD_BASE],
+    ]:
+        db.execute('INSERT INTO batters (name, year, position) VALUES(?, ?, ?)', values)
+
+    # No match, just insert
+    assert db.count('batters') == 3
+    row_id = db.update('batters', {'name': 'McEwing', 'year': 2000}, ['name', 'year'])
+    assert db.count('batters') == 4
+    assert row_id == 4
+
+    # Actual update
+    row_id = db.update('batters', {'name': 'Olerud', 'year': 1998}, ['name', 'year'])
+    assert db.count('batters') == 4
+    assert row_id is None
+
+    db.close(print_table_sizes=False)
+    path.unlink()
