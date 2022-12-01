@@ -36,8 +36,7 @@ def demo_db():
         db.execute('INSERT INTO batters (name, year, hits, position) VALUES(?, ?, ?, ?)', values)
 
     yield db
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
 
 
 def test_lookup_all(demo_db):
@@ -130,7 +129,8 @@ def test_update(demo_db):
     assert demo_db.lookup('hits', 'batters', {'name': 'Zeile'}) == 4
 
 
-def test_all_field_update():
+@pytest.fixture()
+def demo_without_id_db():
     path = pathlib.Path('all_field.db')
     db = SQLiteDB(path, default_type='int')
     db.tables['batters'] = ['name', 'year', 'position']
@@ -145,6 +145,13 @@ def test_all_field_update():
     ]:
         db.execute('INSERT INTO batters (name, year, position) VALUES(?, ?, ?)', values)
 
+    yield db
+    db.dispose()
+
+
+def test_all_field_update(demo_without_id_db):
+    db = demo_without_id_db
+
     # No match, just insert
     assert db.count('batters') == 3
     row_id = db.update('batters', {'name': 'McEwing', 'year': 2000}, ['name', 'year'])
@@ -156,5 +163,8 @@ def test_all_field_update():
     assert db.count('batters') == 4
     assert row_id is None
 
-    db.close(print_table_sizes=False)
-    path.unlink()
+
+def test_accidental_open():
+    db = SQLiteDB(pathlib.Path('empty.db'))
+    db.update_database_structure()  # Update with no tables defined
+    db.dispose()

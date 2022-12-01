@@ -301,6 +301,11 @@ class SQLiteDB:
         self.write()
         self.raw_db.close()
 
+    def dispose(self):
+        """Used in tests to close the database and remove the file."""
+        self.close(print_table_sizes=False)
+        self.path.unlink()
+
     def __repr__(self):
         """String representing the number of rows in each table.
 

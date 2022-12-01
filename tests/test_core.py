@@ -13,8 +13,7 @@ def basic_db():
     db.field_types['grade'] = 'real'
     db.field_types['present'] = 'bool'
     yield db
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
 
 
 def test_creation(basic_db):
@@ -147,8 +146,7 @@ def test_quiet_close(capsys):
     db = SQLiteDB(path)
     db.tables['people'] = ['name', 'age', 'grade', 'present']
     db.update_database_structure()
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
     captured = capsys.readouterr()
     assert captured.out == ''
     assert captured.err == ''
