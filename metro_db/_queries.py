@@ -21,7 +21,7 @@ def format_value(self, field, value):
             return f'"{value}"'
     elif ft in self.adapters:
         return self.adapters[ft](value)
-    elif ft == 'DATE':
+    elif ft in ['DATE', 'TIMESTAMP']:
         return f'"{value}"'
     else:
         return str(value)

@@ -1,3 +1,4 @@
+import datetime
 import pathlib
 import pytest
 from metro_db import SQLiteDB
@@ -168,3 +169,63 @@ def test_accidental_open():
     db = SQLiteDB(pathlib.Path('empty.db'))
     db.update_database_structure()  # Update with no tables defined
     db.dispose()
+
+
+@pytest.fixture()
+def date_db():
+    path = pathlib.Path('history.db')
+    db = SQLiteDB(path)
+    db.tables = {
+        'great_moments': ['id', 'name', 'date'],
+        'better_moments': ['id', 'name', 'datetime'],
+    }
+    db.field_types['id'] = 'int'
+    db.field_types['date'] = 'date'
+    db.field_types['datetime'] = 'timestamp'
+    db.update_database_structure()
+
+    yield db
+    db.dispose()
+
+
+def test_date_handling(date_db):
+    # Test insertion
+    date_db.execute('INSERT INTO great_moments (name, date) VALUES(?, ?)',
+                    ['Declaration of Independence', datetime.date(1776, 7, 4)])
+
+    assert date_db.count('great_moments') == 1
+
+    # Check return types
+    row = date_db.query_one('SELECT * FROM great_moments')
+    assert row['id'] == 1
+    assert row['name'] == 'Declaration of Independence'
+    assert row['date'] == datetime.date(1776, 7, 4)
+    assert isinstance(row['date'], datetime.date)
+
+    # Insert two more
+    date_db.insert('great_moments', {'name': 'Beethoven\'s Ninth Symphony', 'date': '1824-05-07'})
+    date_db.update('great_moments', {'name': 'Rosalind Franklin born', 'date': datetime.date(1920, 7, 25)}, 'name')
+
+    # Check output type
+    assert isinstance(date_db.lookup('date', 'great_moments', {'name': "Beethoven's Ninth Symphony"}),
+                      datetime.date)
+
+    # Check clause generation
+    event_name = date_db.lookup('name', 'great_moments', {'date': datetime.date(1920, 7, 25)})
+    assert event_name == 'Rosalind Franklin born'
+
+
+def test_datetime_handling(date_db):
+    date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': datetime.datetime(2015, 10, 27, 20, 7)})
+    date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
+    date_db.insert('better_moments', {'name': '1969 Game 5', 'datetime': datetime.datetime(1969, 10, 16)})
+
+    # Check output type
+    assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
+
+    # Check clause generation
+    event_name = date_db.lookup('name', 'better_moments', {'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
+    assert event_name == '1986 Game 6'
+
+    count = date_db.count('better_moments', clause='WHERE datetime > "1984-01-01"')
+    assert count == 2
