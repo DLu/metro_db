@@ -130,6 +130,13 @@ def test_update(demo_db):
     assert demo_db.lookup('hits', 'batters', {'name': 'Zeile'}) == 4
 
 
+def test_none(demo_db):
+    assert demo_db.count('batters', clause={'name': None}) == 0
+    demo_db.insert('batters', {'year': 2002, 'hits': 5})
+    clause = 'WHERE hits > 0 AND ' + demo_db.generate_clause({'name': None}, full=False)
+    assert demo_db.count('batters', clause=clause) == 1
+
+
 @pytest.fixture()
 def demo_without_id_db():
     path = pathlib.Path('all_field.db')
@@ -157,7 +164,7 @@ def test_all_field_update(demo_without_id_db):
     assert db.count('batters') == 3
     row_id = db.update('batters', {'name': 'McEwing', 'year': 2000}, ['name', 'year'])
     assert db.count('batters') == 4
-    assert row_id == 4
+    assert row_id is None
 
     # Actual update
     row_id = db.update('batters', {'name': 'Olerud', 'year': 1998}, ['name', 'year'])
