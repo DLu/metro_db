@@ -45,8 +45,9 @@ class MetroDB(SQLiteDB):
 
         db_structure = yaml.safe_load(open(structure_filepath))
         self.tables = db_structure['tables']
-        self.field_types = db_structure.get('types', {})
+        self.field_types = db_structure.get('types', db_structure.get('field_types', {}))
         self.default_type = db_structure.get('default_type', self.default_type)
+        self.primary_keys = db_structure.get('primary_keys', self.primary_keys)
 
     def update_database_structure(self):
         """Create or update the structure of all tables.

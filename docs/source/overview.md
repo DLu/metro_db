@@ -53,7 +53,7 @@ The equivalent `metro_db.SQLiteDB` usage is much simpler.
 from metro_db import SQLiteDB
 db = SQLiteDB('tutorial.db')
 db.tables['movie'] = ['title', 'year', 'score']
-db.field_types = {'year': 'int', 'score': 'real'}
+db.field_types = {'year': 'int', 'score': 'float'}
 db.update_database_structure()
 db.insert('movie',
           {'title': 'Monty Python and the Holy Grail',
@@ -93,7 +93,7 @@ tables:
     - score
 types:
     year: int
-    score: real
+    score: float
 ```
 
 The equivalent Python for initialization is even easier:
