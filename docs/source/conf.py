@@ -19,3 +19,6 @@ extensions = [
 html_theme = 'scrolls'
 autoclass_content = 'both'
 html_static_path = ['_static']
+html_css_files = [
+    'metro.css',
+]
