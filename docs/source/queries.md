@@ -59,3 +59,55 @@ db.execute_many('INSERT INTO movie (title, year, score) VALUES(?, ?, ?)',
 ```
 
 Running `execute_many` is often quicker than running `execute` on the individual items.
+
+## Errors
+There's lots of ways for database operations to go wrong. When that happens, `metro_db` will throw a `DatabaseError`. What sets it apart from the garden-variety [`sqlite3.Error`](https://docs.python.org/3/library/sqlite3.html#exceptions) is that it will contain the SQL query and values used in the `query/execute` methods. These can be accessed with the `command` and `parameters` fields.
+
+```python
+from metro_db import DatabaseError
+
+try:
+    # a bunch of complicated SQL stuff
+except DatabaseError as e:
+    print(f'Problem occurred: {e.value}')
+    print(f'   with the command "{e.value.command}"')
+    print(f'   and parameters {e.value.parameters}')
+```
+
+## Python Powered SQL
+
+The exact syntax required for SQL commands is a skill unto itself, and not necessarily one that Python developers have fully developed. To that end, `metro_db` implements a number of Python-esque methods that wrap the database commands for ease of use.
+
+### Lookup
+Let's start with a basic lookup, where you want to know what year a movie came out.
+
+```python
+# Raw SQL Approach
+result = db.query_one('SELECT year FROM movie WHERE title="Monty Python and the Holy Grail"')
+print(result['year'])
+```
+
+A couple of pain points with this approach:
+ 1. Requires knowing the exact SQL syntax
+ 2. Must remember to quote the title yourself
+ 3. Even though we only look up one field, a `Row` is still returned and we must retrieve the value from there.
+
+Alternatively, we could use the `lookup` wrapper.
+
+```python
+year = db.lookup('year', 'movie', 'WHERE title="Monty Python and the Holy Grail"')
+print(year)
+```
+
+The parameters here are
+ * The field we want to look up
+ * The table name
+ * (optional) the SQL clause
+
+We can simplify this even further by letting the library generate the clause for us, by passing a dictionary in.
+```python
+year = db.lookup('year', 'movie', {'title': 'Monty Python and the Holy Grail'})
+print(year)
+```
+
+Look! No SQL here!
