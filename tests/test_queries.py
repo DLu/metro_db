@@ -36,8 +36,7 @@ def demo_db():
         db.execute('INSERT INTO batters (name, year, hits, position) VALUES(?, ?, ?, ?)', values)
 
     yield db
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
 
 
 def test_lookup_all(demo_db):

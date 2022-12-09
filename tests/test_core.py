@@ -10,11 +10,10 @@ def basic_db():
     db = SQLiteDB(path)
     db.tables['people'] = ['name', 'age', 'grade', 'present']
     db.field_types['age'] = 'int'
-    db.field_types['grade'] = 'real'
+    db.field_types['grade'] = 'float'
     db.field_types['present'] = 'bool'
     yield db
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
 
 
 def test_creation(basic_db):
@@ -147,8 +146,7 @@ def test_quiet_close(capsys):
     db = SQLiteDB(path)
     db.tables['people'] = ['name', 'age', 'grade', 'present']
     db.update_database_structure()
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
     captured = capsys.readouterr()
     assert captured.out == ''
     assert captured.err == ''
@@ -210,7 +208,7 @@ def test_column_alter(basic_db):
                           [['David', 25, 98.6, True],
                            ['Elise', 24, 99.1, True]])
 
-    basic_db.field_types['temperature'] = 'real'
+    basic_db.field_types['temperature'] = 'float'
     basic_db.update_table('people', ['name', 'age', 'temperature', 'present'], {'temperature': 'grade'})
 
     assert basic_db.lookup('temperature', 'people', 'WHERE name="David"') == 98.6

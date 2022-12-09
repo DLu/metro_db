@@ -99,7 +99,7 @@ class SQLiteDB:
         try:
             cursor = self.raw_db.cursor()
             yield from cursor.execute(query)
-        except sqlite3.OperationalError as e:
+        except (sqlite3.Error, ValueError) as e:
             raise DatabaseError(str(e), query) from None
 
     def execute(self, command, params=()):
@@ -116,7 +116,7 @@ class SQLiteDB:
             cur = self.raw_db.cursor()
             cur.execute(command, params)
             return cur
-        except sqlite3.Error as e:
+        except (sqlite3.Error, ValueError) as e:
             raise DatabaseError(str(e), command, params) from None
 
     def execute_many(self, command, objects):
@@ -128,7 +128,7 @@ class SQLiteDB:
         """
         try:
             self.raw_db.executemany(command, objects)
-        except sqlite3.Error as e:
+        except (sqlite3.Error, ValueError) as e:
             raise DatabaseError(str(e), command, objects) from None
 
     def get_field_type(self, field, full=False):
@@ -290,6 +290,11 @@ class SQLiteDB:
             print(self)
         self.write()
         self.raw_db.close()
+
+    def dispose(self):
+        """Used in tests to close the database and remove the file."""
+        self.close(print_table_sizes=False)
+        self.path.unlink()
 
     def __repr__(self):
         """String representing the number of rows in each table.
