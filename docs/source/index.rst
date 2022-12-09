@@ -7,11 +7,8 @@ Welcome to MetroDB's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   sqlite_db
-   metro_db
-   error
-
-
+   tutorials
+   api
 
 Indices and tables
 ==================
