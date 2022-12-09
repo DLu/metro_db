@@ -19,8 +19,7 @@ def basic_db():
                      ['Elise', 24, 99.1, True]])
     db.write()
     yield db
-    db.close(print_table_sizes=False)
-    path.unlink()
+    db.dispose()
 
 
 def test_peek_basic(basic_db, capsys):

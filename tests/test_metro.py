@@ -17,7 +17,7 @@ def test_metro_basic():
     db.update_database_structure()
     assert len(db.tables) == 1
     assert 'characters' in db.tables
-    db.path.unlink()
+    db.dispose()
 
 
 def test_structure_filepath():
@@ -25,7 +25,7 @@ def test_structure_filepath():
     db.load_yaml(db.folder / 'metro.yaml')
     assert len(db.tables) == 1
     assert 'characters' in db.tables
-    db.path.unlink()
+    db.dispose()
 
 
 def test_structure_key():
@@ -33,14 +33,14 @@ def test_structure_key():
     db.load_yaml(structure_key='metro')
     assert len(db.tables) == 1
     assert 'characters' in db.tables
-    db.path.unlink()
+    db.dispose()
 
 
 def test_invalid_spec():
     db = MetroDB('other', folder=TEST_FOLDER)
     with pytest.raises(RuntimeError):
         db.load_yaml(db.folder / 'metro.yaml', 'x')
-    db.path.unlink()
+    db.dispose()
 
 
 def test_scope():
