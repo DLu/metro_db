@@ -111,3 +111,110 @@ print(year)
 ```
 
 Look! No SQL here!
+
+
+### Generating Clauses
+In general, all of the methods here that take a clause can use one of two options:
+ 1. A string that starts with `WHERE`
+ 2. A dictionary of values that must match exactly.
+
+If a dictionary is passed in, it will be converted to an SQL `WHERE` clause via the `generate_clause` method. Note that the quotation marks around the value in the clause will be inserted automatically, using the `format_value` method which uses the column's datatype to determine any necessary wrapping.
+
+If there are multiple fields in the dictionary, the default behavior is to generate a clause where all the values must match, i.e. `WHERE year=1975 AND score=8.4`
+
+There are a few limitations to using the dictionary-based approach:
+ * There is no support for complex logical operations, e.g. combining AND/OR.
+ * There is no support for operators other than `=`, e.g. `>`, `<`, `LIKE`, etc.
+
+
+### Lookup All
+
+`lookup_all` is similar to `lookup` except it returns all the values of a field matching the query.
+
+```python
+for title in db.lookup_all('title', 'movie'):
+    print(title)
+```
+
+In addition to specifying a clause, you can also add the flag `distinct=True` to ensure uniqueness in the returned results.
+
+
+### Insert
+The `insert` method wraps the `INSERT` SQL execution. Compare the raw SQL approach:
+
+```python
+db.execute('INSERT INTO movie (title, year, score) VALUES(?, ?, ?)',
+            ('Monty Python and the Holy Grail', 1975, 8.2))
+```
+where the column names are completely separate from their values, to the Python dictionary based approach:
+```python
+db.insert('movie',
+          {'title': 'Monty Python and the Holy Grail', 'year': 1975, 'score': 8.2})
+```
+
+Note that `insert` also has a return value, which is the value of the primary key for the newly inserted row (if it exists). This comes from the [`lastrowid`](https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor-lastrowid.html), which is the value of the `AUTO_INCREMENT` column, and since our primary keys have that property, that is what `lastrowid` contains.
+
+### Bulk Insert
+`bulk_insert` is a faster way to insert multiple rows into tables. One of the ways it does that is by removing the dictionary data structure for the new rows. Instead, the parameters are
+ * The name of the table
+ * The names of the columns for each new row
+ * A list of tuples with the new values.
+
+The example from the `execute` section above could be rewritten as
+
+```python
+db.bulk_insert('movie', ['title', 'year', 'score'],
+               [('Life of Brian', 1979, 8.5),
+                ('The Meaning of Life', 1983, 7.7)])
+```
+
+### Update
+The `update` is very similar to `insert` in that it takes two main parameters (a table name and a dictionary of values), but instead, it will only insert the dictionary isn't already in the table. Otherwise, it will just update the values.
+
+```python
+city_id = db.insert('cities', {'name': 'Manhattan', 'population': 1597000})
+db.update('cities', {'id': city_id, 'population': 1629000})
+```
+The first line inserts a row into the table, and `city_id` is set to the auto-generated `id` field.
+
+Then, if we want to update the population, we can do so with the `update` function. It determines whether the row is already contained in the table by looking at the third parameter `replace_key` which by default is `'id'`. It then updates (all) the row(s) with that `id` to have the new population.
+
+If you pass in a different `replace_key`, it will instead determine membership with that column.
+```python
+db.update('movie', {'title': 'Monty Python and the Holy Grail', 'score': 9.8})
+```
+
+You can also pass in multiple criteria by setting `replace_key` to a list of column names.
+
+
+## Even Fancier SQL
+### Count
+Count the number of matching rows with `count`
+```python
+db.count('movie', 'WHERE score > 8')
+```
+The clause portion is optional.
+
+### Dict Lookup
+In the case where you want the output of a query to not be a list / iterator, you can structure it into a dictionary with `dict_lookup`.
+
+```python
+scores = db.dict_lookup('title', 'score', 'movie')
+# Result is {'And Now for Something Completely Different', 7.5,
+#            'Monty Python and the Holy Grail': 8.2}
+```
+
+### Unique Counts
+If you want to count the number of occurrences of all values of a column, you can get a dictionary mapping the values to their counts with `unique_counts`:
+
+```python
+yearly_activity = db.unique_counts('movie', 'year')
+# Result is {1971: 1, 1975: 1}
+```
+
+### Sum
+Here's a shortcut for calculating the sum of the values of a column.
+
+```python
+avg_score = db.sum('movie', 'score') / db.count('movie')
+```
