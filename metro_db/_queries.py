@@ -202,28 +202,41 @@ def update(self, table, row_dict, replace_key='id'):
                                 Otherwise, it specifies multiple field names that have to match.
 
     Returns:
-        int: The row id of the new or old row
+        int: The row id of the new or old row (emulating lastrowid)
     """
     if isinstance(replace_key, str):
         clause = self.generate_clause({replace_key: row_dict[replace_key]})
     else:
         clause = self.generate_clause({key: row_dict[key] for key in replace_key})
 
-    if self.count(table, clause) == 0:
+    existing = self.query_one(f'SELECT * FROM {table} {clause}')
+    if not existing:
         # If no matches, just insert
-        return self.insert(table, row_dict)
-
-    field_qs = []
-    values = []
-    for k in row_dict.keys():
-        if k == replace_key:
-            continue
-        values.append(row_dict[k])
-        field_qs.append(f'{k}=?')
-    field_s = ', '.join(field_qs)
-    query = f'UPDATE {table} SET {field_s} ' + clause
-    self.execute(query, values)
-    if 'id' in row_dict:
-        return row_dict['id']
+        self.insert(table, row_dict)
+        existing = self.query_one(f'SELECT * FROM {table} {clause}')
     else:
-        return self.lookup('id', table, clause)
+        field_qs = []
+        values = []
+        for k in row_dict.keys():
+            if isinstance(replace_key, str) and k == replace_key:
+                continue
+            elif isinstance(replace_key, (list, dict)) and k in replace_key:
+                continue
+            values.append(row_dict[k])
+            field_qs.append(f'{k}=?')
+
+        if field_qs:
+            field_s = ', '.join(field_qs)
+            query = f'UPDATE {table} SET {field_s} ' + clause
+            self.execute(query, values)
+
+    # Determine proper return
+    if table not in self.primary_key_per_table:
+        # No primary key, return nothing
+        return
+    return_key = self.primary_key_per_table[table]
+
+    if return_key in row_dict:
+        return row_dict[return_key]
+    else:
+        return existing[return_key]
