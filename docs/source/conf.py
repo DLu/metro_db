@@ -12,9 +12,13 @@ author = 'David V. Lu!!'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'myst_parser',
 ]
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'scrolls'
 autoclass_content = 'both'
 html_static_path = ['_static']
+html_css_files = [
+    'metro.css',
+]
