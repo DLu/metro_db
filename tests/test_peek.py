@@ -10,7 +10,7 @@ def basic_db():
     db = SQLiteDB(path)
     db.tables['people'] = ['name', 'age', 'grade', 'present']
     db.field_types['age'] = 'int'
-    db.field_types['grade'] = 'real'
+    db.field_types['grade'] = 'float'
     db.field_types['present'] = 'bool'
     db.update_database_structure()
 
