@@ -21,6 +21,8 @@ def format_value(self, field, value):
             return f'"{value}"'
     elif ft in self.adapters:
         return self.adapters[ft](value)
+    elif ft in ['DATE', 'TIMESTAMP']:
+        return f'"{value}"'
     else:
         return str(value)
 
@@ -40,7 +42,10 @@ def generate_clause(self, value_dict, operator='AND', full=True):
         return ''
     pieces = []
     for key, value in value_dict.items():
-        pieces.append('{}={}'.format(key, self.format_value(key, value)))
+        if value is None:
+            pieces.append(f'{key} IS NULL')
+        else:
+            pieces.append('{}={}'.format(key, self.format_value(key, value)))
 
     clause = f' {operator} '.join(pieces)
     if full:
