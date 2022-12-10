@@ -44,7 +44,7 @@ class SQLiteDB:
         self.primary_key_per_table = {}
         self.adapters = {}
         self.converters = {}
-        self.register_custom_type('bool', bool, int, lambda v: bool(int(v)))
+        self.register_custom_type('bool', bool, int, lambda v: bool(v))
         self.q_strings = {}
 
     def register_custom_type(self, name, type_, adapter_fn, converter_fn):
