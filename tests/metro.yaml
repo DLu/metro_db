@@ -5,6 +5,6 @@ tables:
     - role
     - line_count
 types:
-    name: text
+    name: str
     role: Role
 default_type: int
