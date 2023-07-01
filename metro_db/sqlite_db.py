@@ -236,6 +236,9 @@ class SQLiteDB:
             else:
                 fields_to_add.append(key)
 
+                if key in self.primary_keys:
+                    needs_restructure = True
+
         fields_to_remove = set(type_map.keys()) - set(keys)
         needs_restructure = needs_restructure or len(fields_to_remove)
 
