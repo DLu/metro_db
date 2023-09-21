@@ -258,8 +258,19 @@ def test_read_only_uri(basic_db):
     assert ro_db.count('people') == 1
 
 
-def test_no_create():
+def test_no_create(basic_db):
+    basic_db.update_database_structure()
+    basic_db.execute('INSERT INTO people (name, age, grade, present) VALUES(?, ?, ?, ?)', [1, 1, 1, 1])
+    basic_db.write()
+
+    # Should be able to read from existing db
+    rw_db = SQLiteDB(pathlib.Path('basic.db'), uri_query='mode=rw')
+    rw_db.update_database_structure()
+    assert rw_db.count('people') == 1
+
+    # Should NOT be able to read from non-existing db
     path = pathlib.Path('nosuchdb')
     with pytest.raises(DatabaseError) as e_info:
         SQLiteDB(path, uri_query='mode=rw')
     assert 'unable to open database file' in str(e_info.value)
+    assert not path.exists()

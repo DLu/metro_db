@@ -7,7 +7,7 @@ from .sqlite_db import SQLiteDB
 class MetroDB(SQLiteDB):
     """SQLiteDB that uses a yaml file to specify the database structure"""
 
-    def __init__(self, key, folder=pathlib.Path('.'), extension='db', enums_to_register=[]):
+    def __init__(self, key, folder=pathlib.Path('.'), extension='db', enums_to_register=[], uri_query=None):
         """Constructor
 
         Args:
@@ -15,8 +15,9 @@ class MetroDB(SQLiteDB):
             folder (pathlib.Path): Folder for the database file, and maybe the yaml
             extension (str): The filename suffix for the database file
             enums_to_register (list): A list of enums to register
+            uri_query (str|None): If specified, the query string to use in the sqlite3 URI
         """
-        SQLiteDB.__init__(self, folder / f'{key}.{extension}')
+        SQLiteDB.__init__(self, folder / f'{key}.{extension}', uri_query=uri_query)
         self.folder = folder
         self.key = key
 
