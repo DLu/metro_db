@@ -25,7 +25,7 @@ Every field has an associated "type", which is really TWO types, the **Python** 
 |-------------|-------------|
 | `int`       | `INTEGER`   |
 | `float`     | `REAL`      |
-| `string`    | `TEXT`      |
+| `str`       | `TEXT`      |
 | `bool`      | `INTEGER`   |
 | `date`      | `DATE`      |
 | `datetime`  | `TIMESTAMP` |
@@ -35,6 +35,8 @@ TODO: Check date types
 When you want to use a Python type in SQL, it will automatically be **adapted** into its corresponding SQL type.
 
 When you read a value from the SQL, it will automatically be **converted** into its corresponding Python type.
+
+When specifying a type in the database structure, use the Python type.
 
 ### Example
 ```python

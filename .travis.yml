@@ -1,11 +1,11 @@
 language: python
 python:
-    - 3.8
-    - 3.9
+- 3.8
+- 3.9
 before_install:
-  - python --version
+- python --version
 install:
-  - pip install ".[dev]" .
+- pip install ".[dev]" .
 script: pytest --capture=no -vv
 after_success:
-  - pytest --cov-report term-missing --cov
+- pytest --cov-report term-missing --cov

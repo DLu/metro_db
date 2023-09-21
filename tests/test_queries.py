@@ -19,7 +19,7 @@ def demo_db():
     path = pathlib.Path('demo.db')
     db = SQLiteDB(path, default_type='int')
     db.tables['batters'] = ['id', 'name', 'year', 'hits', 'position']
-    db.field_types['name'] = 'text'
+    db.field_types['name'] = 'str'
     db.field_types['position'] = 'Position'
     db.register_custom_enum(Position)
     db.update_database_structure()
@@ -142,7 +142,7 @@ def demo_without_id_db():
     path = pathlib.Path('all_field.db')
     db = SQLiteDB(path, default_type='int')
     db.tables['batters'] = ['name', 'year', 'position']
-    db.field_types['name'] = 'text'
+    db.field_types['name'] = 'str'
     db.field_types['position'] = 'Position'
     db.register_custom_enum(Position)
     db.update_database_structure()

@@ -1,10 +1,10 @@
 tables:
-    characters:
-    - id
-    - name
-    - role
-    - line_count
+  characters:
+  - id
+  - name
+  - role
+  - line_count
 types:
-    name: text
-    role: Role
+  name: str
+  role: Role
 default_type: int

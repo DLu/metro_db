@@ -19,14 +19,14 @@ class Row(sqlite3.Row):
 PYTHON_SQL_TYPE_TRANSLATION = {
     'int': 'INTEGER',
     'float': 'REAL',
-    'string': 'TEXT',
+    'str': 'TEXT',
 }
 
 
 class SQLiteDB:
     """Core database structure that handles base sqlite3 interactions"""
 
-    def __init__(self, database_path, default_type='TEXT', primary_keys=['id']):
+    def __init__(self, database_path, default_type='str', primary_keys=['id']):
         """
         Args:
             database_path (pathlib.Path): File to store the data
@@ -235,6 +235,9 @@ class SQLiteDB:
                     needs_restructure = True
             else:
                 fields_to_add.append(key)
+
+                if key in self.primary_keys:
+                    needs_restructure = True
 
         fields_to_remove = set(type_map.keys()) - set(keys)
         needs_restructure = needs_restructure or len(fields_to_remove)

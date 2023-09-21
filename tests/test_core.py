@@ -9,6 +9,7 @@ def basic_db():
     path = pathlib.Path('basic.db')
     db = SQLiteDB(path)
     db.tables['people'] = ['name', 'age', 'grade', 'present']
+    db.field_types['id'] = 'int'
     db.field_types['age'] = 'int'
     db.field_types['grade'] = 'float'
     db.field_types['present'] = 'bool'
@@ -139,6 +140,27 @@ def test_column_removal(basic_db):
 
     row = basic_db.query_one('SELECT * FROM people')
     assert len(row) == 3
+
+
+def test_column_insertion(basic_db):
+    basic_db.update_database_structure()
+    basic_db.execute('INSERT INTO people (name, age, grade, present) VALUES(?, ?, ?, ?)', [1, 1, 1, 1])
+
+    row = basic_db.query_one('SELECT * FROM people')
+    assert len(row) == 4
+
+    basic_db.tables['people'].append('email')
+    basic_db.update_database_structure()
+
+    row = basic_db.query_one('SELECT * FROM people')
+    assert len(row) == 5
+
+    basic_db.tables['people'] = ['id'] + basic_db.tables['people']
+    basic_db.update_database_structure()
+
+    row = basic_db.query_one('SELECT * FROM people')
+    assert len(row) == 6
+    assert row['id']
 
 
 def test_quiet_close(capsys):
