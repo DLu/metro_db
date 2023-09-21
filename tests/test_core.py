@@ -238,3 +238,28 @@ def test_column_alter(basic_db):
     basic_db.field_types['present'] = 'int'
     basic_db.update_database_structure()
     assert basic_db.lookup('present', 'people', 'WHERE name="David"') == 1
+
+
+def test_read_only_uri(basic_db):
+    basic_db.update_database_structure()
+    basic_db.execute('INSERT INTO people (name, age, grade, present) VALUES(?, ?, ?, ?)', [1, 1, 1, 1])
+    basic_db.write()
+
+    path = pathlib.Path('basic.db')
+    ro_db = SQLiteDB(path, uri_query='mode=ro')
+    ro_db.update_database_structure()
+
+    assert ro_db.count('people') == 1
+
+    with pytest.raises(DatabaseError) as e_info:
+        ro_db.execute('INSERT INTO people (name, age, grade, present) VALUES(?, ?, ?, ?)', [0, 0, 0, 0])
+    assert 'attempt to write a readonly database' in str(e_info.value)
+
+    assert ro_db.count('people') == 1
+
+
+def test_no_create():
+    path = pathlib.Path('nosuchdb')
+    with pytest.raises(DatabaseError) as e_info:
+        SQLiteDB(path, uri_query='mode=rw')
+    assert 'unable to open database file' in str(e_info.value)

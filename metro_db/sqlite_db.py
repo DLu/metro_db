@@ -26,14 +26,26 @@ PYTHON_SQL_TYPE_TRANSLATION = {
 class SQLiteDB:
     """Core database structure that handles base sqlite3 interactions"""
 
-    def __init__(self, database_path, default_type='str', primary_keys=['id']):
+    def __init__(self, database_path, default_type='str', primary_keys=['id'], uri_query=None):
         """
         Args:
             database_path (pathlib.Path): File to store the data
             default_type (str): The default SQL type to use
             primary_keys (list of strings): Fields that should automatically be marked as primary keys
+            uri_query (str|None): If specified, the query string to use in the URI [1]
+
+        [1] https://docs.python.org/3/library/sqlite3.html#how-to-work-with-sqlite-uris
         """
-        self.raw_db = sqlite3.connect(str(database_path), detect_types=sqlite3.PARSE_DECLTYPES)
+        if uri_query:
+            self.target = f'file:{database_path}?{uri_query}'
+            uri = True
+        else:
+            self.target = str(database_path)
+            uri = False
+        try:
+            self.raw_db = sqlite3.connect(self.target, uri=uri, detect_types=sqlite3.PARSE_DECLTYPES)
+        except sqlite3.OperationalError as e:
+            raise DatabaseError(str(e), self.target) from None
         self.path = database_path
         self.raw_db.row_factory = Row
 
