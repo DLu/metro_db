@@ -9,6 +9,7 @@ def basic_db():
     path = pathlib.Path('basic.db')
     db = SQLiteDB(path)
     db.tables['people'] = ['name', 'age', 'grade', 'present']
+    db.field_types['id'] = 'int'
     db.field_types['age'] = 'int'
     db.field_types['grade'] = 'float'
     db.field_types['present'] = 'bool'
@@ -159,6 +160,7 @@ def test_column_insertion(basic_db):
 
     row = basic_db.query_one('SELECT * FROM people')
     assert len(row) == 6
+    assert row['id']
 
 
 def test_quiet_close(capsys):
