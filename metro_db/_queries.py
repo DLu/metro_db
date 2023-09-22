@@ -122,6 +122,32 @@ def dict_lookup(self, key_field, value_field, table, clause=''):
     return {d[key_field]: d[value_field] for d in results}
 
 
+def table_as_dict(self, table, key_field='id', fields=None, clause=''):
+    """Return a dictionary mapping the key_field to the row for some query.
+
+    Args:
+        table (str): The name of the table to query
+        key_field (str): The name of the field that should be the key in the dictionary
+        fields ([str], None): A list of fields for the rows, or if None, use *
+        clause (str/dict): Optional clause to add to query. If dict, use generate_clause to translate to str.
+
+    Returns:
+        dict: All of the rows returned by the query formatted into a dictionary
+
+    """
+    if not isinstance(clause, str):
+        clause = self.generate_clause(clause)
+    if fields is None:
+        field_s = '*'
+    else:
+        field_s = ', '.join(fields)
+        if key_field not in fields:
+            field_s += f', {key_field}'
+
+    results = self.query(f'SELECT {field_s} FROM {table} {clause}')
+    return {d[key_field]: d for d in results}
+
+
 def unique_counts(self, table, ident_field):
     """Return a dictionary mapping the different values of the ident_field column to how many times each appears.
 
@@ -245,3 +271,16 @@ def update(self, table, row_dict, replace_key='id'):
         return row_dict[return_key]
     else:
         return existing[return_key]
+
+
+def unique_insert(self, table, row_dict):
+    """If there's a row where ALL the values match the row_dict's value, do nothing. Otherwise, insert it.
+
+    Args:
+        table (str): The name of the table
+        row_dict (dict): A dictionary where the keys are string field names, and the values are, well, the values
+
+    Returns:
+        int: The row id of the new or old row (emulating lastrowid)
+    """
+    return self.update(table, row_dict, row_dict.keys())

@@ -187,6 +187,20 @@ db.update('movie', {'title': 'Monty Python and the Holy Grail', 'score': 9.8})
 You can also pass in multiple criteria by setting `replace_key` to a list of column names.
 
 
+### Unique Insert
+`unique_insert` is a wrapper around `update`, but it ensures that the *entire* row (as specified) is in the table.
+
+```python
+db.unique_insert('movie', {'title': 'Monty Python and the Holy Grail', 'year': 1975})
+db.unique_insert('movie', {'title': 'Life of Brian', 'year': 1979})
+print(db.count('movie'))  # Contains two movies
+db.unique_insert('movie', {'title': 'Life of Brian'})  # Does nothing, since row matches existing
+db.unique_insert('movie', {'title': 'Monty Python and the Holy Grail', 'year': 2040})  # Inserts new row because
+                                                                                       # year doesn't match.
+                                                                                       # You just know they're going to
+                                                                                       # remake it someday.
+```
+
 ## Even Fancier SQL
 ### Count
 Count the number of matching rows with `count`
@@ -195,14 +209,32 @@ db.count('movie', 'WHERE score > 8')
 ```
 The clause portion is optional.
 
-### Dict Lookup
-In the case where you want the output of a query to not be a list / iterator, you can structure it into a dictionary with `dict_lookup`.
+### Dictionaries
+In the case where you want the output of a query to not be a list / iterator, you can structure it into a dictionary in two different ways.
+
+With `dict_lookup`, you specify a field for the dictionary key, and a field for the dictionary value.
 
 ```python
 scores = db.dict_lookup('title', 'score', 'movie')
 # Result is {'And Now for Something Completely Different', 7.5,
 #            'Monty Python and the Holy Grail': 8.2}
 ```
+
+With `table_as_dict`, you get the entire row as the dictionary value.
+
+```python
+movies = db.table_as_dict('movie', 'title')
+# Result is
+# {'Monty Python and the Holy Grail': {'title': 'Monty Python and the Holy Grail',
+#                                      'year': 1975,
+#                                      'score': 8.2},
+#  'And Now for Something Completely Different': {
+#                                      'title': 'And Now for Something Completely Different',
+#                                      'year': 1971,
+#                                      'score': 7.5}
+#   }
+```
+
 
 ### Unique Counts
 If you want to count the number of occurrences of all values of a column, you can get a dictionary mapping the values to their counts with `unique_counts`:

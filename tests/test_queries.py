@@ -72,6 +72,22 @@ def test_dict_lookup_with_clause(demo_db):
     assert d['Alfonzo'] == 155
 
 
+def test_table_as_dict(demo_db):
+    d = demo_db.table_as_dict('batters')
+    assert d[1]['name'] == 'Olerud'
+    assert d[1]['year'] == 1998
+    assert d[1]['position'] == Position.FIRST_BASE
+    assert len(d) == 9
+
+    d = demo_db.table_as_dict('batters', 'position', ['name', 'hits'], {'year': 2000})
+    assert len(d) == 3
+    assert d[Position.FIRST_BASE]['name'] == 'Zeile'
+    assert d[Position.FIRST_BASE]['hits'] == 146
+    assert 'year' not in d[Position.FIRST_BASE]
+    assert d[Position.CATCHER]['name'] == 'Piazza'
+    assert d[Position.SECOND_BASE]['name'] == 'Alfonzo'
+
+
 def test_unique_counts(demo_db):
     d = demo_db.unique_counts('batters', 'name')
     assert d['Olerud'] == 2
@@ -128,6 +144,16 @@ def test_update(demo_db):
     assert demo_db.count('batters') == 10
     assert row_id == b_id
     assert demo_db.lookup('hits', 'batters', {'name': 'Zeile'}) == 4
+
+
+def test_unique_insert(demo_db):
+    assert demo_db.count('batters') == 9
+    b_id = demo_db.unique_insert('batters', {'name': 'Olerud', 'year': 1998})
+    assert b_id <= 9
+    assert demo_db.count('batters') == 9
+    b_id = demo_db.unique_insert('batters', {'name': 'Piazza', 'year': 2001})
+    assert b_id == 10
+    assert demo_db.count('batters') == 10
 
 
 def test_none(demo_db):
