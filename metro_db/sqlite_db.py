@@ -282,7 +282,7 @@ class SQLiteDB:
 
     # Bonus "syntactic sugar" is provided in queries.py
     from ._queries import lookup_all, lookup, count, dict_lookup, unique_counts, sum_counts, insert, bulk_insert
-    from ._queries import format_value, generate_clause, sum, update
+    from ._queries import format_value, generate_clause, sum, update, unique_insert, table_as_dict
 
     def reset(self, table=None):
         """Clear all or some of the data out of the database and recreate the table(s).
