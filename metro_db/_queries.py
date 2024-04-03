@@ -1,3 +1,6 @@
+from .types import FlexibleIterator
+
+
 def format_value(self, field, value):
     """If the field's type is text, surround with quotes.
 
@@ -69,8 +72,7 @@ def lookup_all(self, field, table, clause='', distinct=False):
     field_s = field if not distinct else f'DISTINCT {field}'
     if not isinstance(clause, str):
         clause = self.generate_clause(clause)
-    for row in self.query(f'SELECT {field_s} FROM {table} {clause}'):
-        yield row[0]
+    return FlexibleIterator(row[0] for row in self.query(f'SELECT {field_s} FROM {table} {clause}'))
 
 
 def lookup(self, field, table, clause=''):

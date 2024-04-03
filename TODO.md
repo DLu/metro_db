@@ -1,5 +1,6 @@
  * Insert invalid type
  * Queries Overview Page
- * Iterators as Lists
  * Install .pypirc
  * CREATE INDEX
+ * Convert to modern package
+ * Ensure datetime works for 3.12+
