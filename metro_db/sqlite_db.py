@@ -20,6 +20,7 @@ PYTHON_SQL_TYPE_TRANSLATION = {
     'int': 'INTEGER',
     'float': 'REAL',
     'str': 'TEXT',
+    'datetime': 'TIMESTAMP',
 }
 
 
