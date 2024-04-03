@@ -30,13 +30,11 @@ Every field has an associated "type", which is really TWO types, the **Python** 
 | `date`      | `DATE`      |
 | `datetime`  | `TIMESTAMP` |
 
-TODO: Check date types
-
 When you want to use a Python type in SQL, it will automatically be **adapted** into its corresponding SQL type.
-
 When you read a value from the SQL, it will automatically be **converted** into its corresponding Python type.
+(This language is important in the Custom Data Types section below.)
 
-When specifying a type in the database structure, use the Python type.
+When specifying a type in the database structure, use the **Python** type.
 
 ### Example
 ```python
