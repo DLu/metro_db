@@ -1,6 +1,6 @@
 import sqlite3
 
-from .types import DatabaseError, Row
+from .types import DatabaseError, Row, FlexibleIterator
 
 PYTHON_SQL_TYPE_TRANSLATION = {
     'int': 'INTEGER',
@@ -98,7 +98,7 @@ class SQLiteDB:
         """
         try:
             cursor = self.raw_db.cursor()
-            yield from cursor.execute(query)
+            return FlexibleIterator(cursor.execute(query))
         except (sqlite3.Error, ValueError) as e:
             raise DatabaseError(str(e), query) from None
 

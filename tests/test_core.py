@@ -101,7 +101,7 @@ def test_query_problems(basic_db):
     assert e.value.parameters is None
 
     with pytest.raises(DatabaseError) as e:
-        list(basic_db.query(command))
+        basic_db.query(command)
 
     assert 'syntax error' in str(e.value)
     assert command == e.value.command
