@@ -2,3 +2,4 @@ metro_db.egg-info
 .pytest_cache/
 .coverage
 dist/
+src/metro_db/_version.py
