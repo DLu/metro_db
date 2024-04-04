@@ -1,2 +1,3 @@
-[run]
-source = metro_db
+[report]
+omit =
+    *_version.py
