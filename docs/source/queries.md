@@ -1,8 +1,5 @@
 # Queries & Commands
 
-## Row class
-Results are returned as `Row` objects, which are built on the [`sqlite3.Row`](https://docs.python.org/3/library/sqlite3.html#row-objects) objects, but they have the additional feature of printing as a dictionary instead of `<sqlite3.Row object at 0x7f70ec8ac9f0>`
-
 ## Raw SQL
 
 If you're well versed in SQL, the easiest way to use the class is with the four "raw" methods.
