@@ -21,6 +21,10 @@ class Row(sqlite3.Row):
         else:
             return default_value
 
+    def items(self):
+        for field in self.keys():
+            yield field, self[field]
+
     def __repr__(self):
         return str(dict(self))
 

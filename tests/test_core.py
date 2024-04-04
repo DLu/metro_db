@@ -38,6 +38,13 @@ def test_insertion(basic_db):
     # Check string representation of Row
     assert str(row) == "{'name': '1', 'age': 1, 'grade': 1.0, 'present': True}"
 
+    # Check iteration
+    assert len(row) == 4
+
+    for k, v in row.items():
+        assert k in ['name', 'age', 'grade', 'present']
+        assert v
+
     # Check the get method
     row = basic_db.query_one('SELECT name, grade, present FROM people')
     assert row.get('name') == '1'

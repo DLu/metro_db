@@ -55,3 +55,17 @@ def test_len(flex_range):
     with pytest.raises(StopIteration):
         next(flex_range)
     assert len(flex_range) == 0
+
+
+def test_multiple(flex_range):
+    assert len(flex_range) == 5
+    c = 0
+    for n in flex_range:
+        assert flex_range[0] == 1
+        c += 1
+    assert c == 5
+    c = 0
+    for n in flex_range:
+        assert flex_range[0] == 1
+        c += 1
+    assert c == 5
