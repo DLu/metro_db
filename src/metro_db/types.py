@@ -12,5 +12,18 @@ class DatabaseError(sqlite3.Error):
 
 
 class Row(sqlite3.Row):
+    def __contains__(self, field):
+        return field in self.keys()
+
+    def get(self, field, default_value=None):
+        if field in self:
+            return self[field]
+        else:
+            return default_value
+
+    def items(self):
+        for field in self.keys():
+            yield field, self[field]
+
     def __repr__(self):
         return str(dict(self))
