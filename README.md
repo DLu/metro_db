@@ -9,7 +9,7 @@ The overall goal is to write less SQL and more Python.
     sudo pip3 install metro_db
 
 ## Documentation
-[![readthedocs badget](https://readthedocs.org/projects/metro_db/badge/?version=latest)](http://metro-db.readthedocs.org/)
+[![readthedocs badge](https://readthedocs.org/projects/metro_db/badge/?version=latest)](http://metro-db.readthedocs.org/)
 
 [`http://metro-db.readthedocs.org/`](http://metro-db.readthedocs.org/)
 
