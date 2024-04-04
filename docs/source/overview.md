@@ -109,5 +109,5 @@ with MetroDB('tutorial') as db:
 ```
 
 Notes:
- * The string `'tutorial'`in the constructor reads the database structure from `tutorial.yaml` and reads/writes the data to `tutorial.db`
+ * The string `'tutorial'` in the constructor reads the database structure from `tutorial.yaml` and reads/writes the data to `tutorial.db`
  * Using the `with` context automatically updates the database structure when the context is entered, and automatically calls `close/write` when exited.

@@ -11,7 +11,7 @@ If you're well versed in SQL, the easiest way to use the class is with the four 
 `query_one` takes a single parameter: a string of the SQL query you want to run and returns a single `Row` object.
 
 ```python
-print(db.query('SELECT title, score FROM movie WHERE year=1975'))
+print(db.query_one('SELECT title, score FROM movie WHERE year=1975'))
 # Output: {'title': 'Monty Python and the Holy Grail', 'score': 8.2}
 ```
 ### Query
