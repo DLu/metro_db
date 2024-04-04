@@ -214,7 +214,7 @@ def date_db():
     }
     db.field_types['id'] = 'int'
     db.field_types['date'] = 'date'
-    db.field_types['datetime'] = 'timestamp'
+    db.field_types['datetime'] = 'datetime'
     db.update_database_structure()
 
     yield db
@@ -262,3 +262,32 @@ def test_datetime_handling(date_db):
 
     count = date_db.count('better_moments', clause='WHERE datetime > "1984-01-01"')
     assert count == 2
+
+
+def test_date_handling_with_old_field_type():
+    # Note: For backwards compatibility, we ensure that declaring the fieldtype "timestamp" still works
+    path = pathlib.Path('old_history.db')
+    date_db = SQLiteDB(path)
+    date_db.tables = {
+        'better_moments': ['id', 'name', 'datetime'],
+    }
+    date_db.field_types['id'] = 'int'
+    date_db.field_types['date'] = 'date'
+    date_db.field_types['datetime'] = 'timestamp'
+    date_db.update_database_structure()
+
+    date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': datetime.datetime(2015, 10, 27, 20, 7)})
+    date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
+    date_db.insert('better_moments', {'name': '1969 Game 5', 'datetime': datetime.datetime(1969, 10, 16)})
+
+    # Check output type
+    assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
+
+    # Check clause generation
+    event_name = date_db.lookup('name', 'better_moments', {'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
+    assert event_name == '1986 Game 6'
+
+    count = date_db.count('better_moments', clause='WHERE datetime > "1984-01-01"')
+    assert count == 2
+
+    date_db.dispose()
