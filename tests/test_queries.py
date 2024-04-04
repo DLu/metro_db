@@ -40,12 +40,58 @@ def demo_db():
     db.dispose()
 
 
+def test_query(demo_db):
+    results = demo_db.query('SELECT * FROM batters')
+    c = 0
+    names = set()
+    for row in results:
+        c += 1
+        names.add(row['name'])
+    assert c == 9
+    assert len(names) == 4
+
+
+def test_query_as_list(demo_db):
+    results = demo_db.query('SELECT * FROM batters ORDER BY -hits')
+    assert len(results) == 9
+
+    assert results[0]['name'] == 'Olerud'
+
+
 def test_lookup_all(demo_db):
+    # Explicitly convert results to list
+    # Test from before FlexibleIterator was implemented
+    values = list(demo_db.lookup_all('name', 'batters', {'year': 1998}))
+    assert str(values) == str(['Olerud', 'Piazza', 'Alfonzo'])
+
     values = list(demo_db.lookup_all('name', 'batters', {'year': 1999}))
     assert len(values) == 3
     assert 'Olerud' in values
     assert 'Piazza' in values
     assert 'Alfonzo' in values
+
+    values = list(demo_db.lookup_all('name', 'batters', {'year': 2000}))
+    assert 'Zeile' in values
+    assert 'Piazza' in values
+    assert 'Alfonzo' in values
+    assert len(values) == 3
+
+
+def test_lookup_all_without_cast(demo_db):
+    values = demo_db.lookup_all('name', 'batters', {'year': 1998})
+    assert str(values) == str(['Olerud', 'Piazza', 'Alfonzo'])
+
+    values = demo_db.lookup_all('name', 'batters', {'year': 1999})
+    assert len(values) == 3
+    assert 'Olerud' in values
+    assert 'Piazza' in values
+    assert 'Alfonzo' in values
+
+    values = demo_db.lookup_all('name', 'batters', {'year': 2000})
+    assert 'Zeile' in values
+    assert 'Piazza' in values
+    assert 'Alfonzo' in values
+    assert len(values) == 3
 
 
 def test_lookup(demo_db):
