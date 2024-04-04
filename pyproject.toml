@@ -22,6 +22,13 @@ requires-python = ">=3.8"
 
 dynamic = ["version"]
 
+classifiers = [
+  'Programming Language :: Python :: 3',
+  'License :: OSI Approved :: BSD License',
+  'Operating System :: OS Independent',
+  'Topic :: Database',
+]
+
 [project.scripts]
 metro_db = "metro_db.peek:main"
 
@@ -29,13 +36,6 @@ metro_db = "metro_db.peek:main"
 test = [
   "pytest>=4",
   "pytest-cov>=2",
-]
-
-classifiers = [
-  'Programming Language :: Python :: 3',
-  'License :: OSI Approved :: BSD License',
-  'Operating System :: OS Independent',
-  'Topic :: Database',
 ]
 
 [project.urls]
