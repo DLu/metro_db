@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "metro_db"
+description = "A wrapper around the sqlite3 database for easy database development"
+readme = "README.md"
+authors = [
+  { name = "David V. Lu!!", email = "davidvlu@gmail.com" },
+]
+maintainers = [
+  { name = "David V. Lu!!", email = "davidvlu@gmail.com" },
+]
+
+dependencies = [
+  'pyyaml',
+  'tabulate',
+]
+
+requires-python = ">=3.8"
+
+dynamic = ["version"]
+
+[project.scripts]
+metro_db = "metro_db.peek:main"
+
+[project.optional-dependencies]
+test = [
+  "pytest>=4",
+  "pytest-cov>=2",
+]
+
+classifiers = [
+  'Programming Language :: Python :: 3',
+  'License :: OSI Approved :: BSD License',
+  'Operating System :: OS Independent',
+  'Topic :: Database',
+]
+
+[project.urls]
+Homepage = "https://github.com/DLu/metro_db"
+"Bug Tracker" = "https://github.com/DLu/metro_db/issues"
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/metro_db/_version.py"
