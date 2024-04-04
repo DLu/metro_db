@@ -35,8 +35,35 @@ def test_insertion(basic_db):
     assert isinstance(row['grade'], float)
     assert row['present'] is True
 
-    # Check string representation of row
+    # Check string representation of Row
     assert str(row) == "{'name': '1', 'age': 1, 'grade': 1.0, 'present': True}"
+
+    # Check iteration
+    assert len(row) == 4
+
+    for k, v in row.items():
+        assert k in ['name', 'age', 'grade', 'present']
+        assert v
+
+    # Check the get method
+    row = basic_db.query_one('SELECT name, grade, present FROM people')
+    assert row.get('name') == '1'
+    assert row.get('age') is None
+    assert row.get('grade') == 1
+    assert row.get('present') is True
+
+    WACKY_VALUE = 'fhqwhgads'
+    assert row.get('name', WACKY_VALUE) == '1'
+    assert row.get('age', WACKY_VALUE) == WACKY_VALUE
+    assert row.get('grade', WACKY_VALUE) == 1
+    assert row.get('present', WACKY_VALUE) is True
+
+    # Check contains method
+    assert 'name' in row
+    assert not ('age' in row)
+    assert 'age' not in row
+    assert 'grade' in row
+    assert 'present' in row
 
     # Check repr
     assert str(basic_db) == 'people(1)\n'
