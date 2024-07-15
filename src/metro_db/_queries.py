@@ -26,6 +26,8 @@ def format_value(self, field, value):
         return self.adapters[ft](value)
     elif ft in ['DATE', 'TIMESTAMP']:
         return f'"{value}"'
+    elif ft == 'BLOB' and isinstance(value, bytes):
+        return f'x\'{value.hex()}\''
     else:
         return str(value)
 

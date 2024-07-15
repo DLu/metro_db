@@ -209,6 +209,14 @@ def test_none(demo_db):
     assert demo_db.count('batters', clause=clause) == 1
 
 
+def test_fieldtypes(demo_db):
+    assert demo_db.get_field_type('id') == 'INTEGER'
+    assert demo_db.get_field_type('name') == 'TEXT'
+    assert demo_db.get_field_type('year') == 'INTEGER'
+    assert demo_db.get_field_type('hits') == 'INTEGER'
+    # assert demo_db.get_field_type('position') == 'Position'
+
+
 @pytest.fixture()
 def demo_without_id_db():
     path = pathlib.Path('all_field.db')
@@ -285,6 +293,8 @@ def test_date_handling(date_db):
     date_db.insert('great_moments', {'name': 'Beethoven\'s Ninth Symphony', 'date': '1824-05-07'})
     date_db.update('great_moments', {'name': 'Rosalind Franklin born', 'date': datetime.date(1920, 7, 25)}, 'name')
 
+    assert date_db.get_field_type('date') == 'DATE'
+
     # Check output type
     assert isinstance(date_db.lookup('date', 'great_moments', {'name': "Beethoven's Ninth Symphony"}),
                       datetime.date)
@@ -298,6 +308,8 @@ def test_datetime_handling(date_db):
     date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': datetime.datetime(2015, 10, 27, 20, 7)})
     date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
     date_db.insert('better_moments', {'name': '1969 Game 5', 'datetime': datetime.datetime(1969, 10, 16)})
+
+    assert date_db.get_field_type('datetime') == 'TIMESTAMP'
 
     # Check output type
     assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
@@ -326,6 +338,8 @@ def test_date_handling_with_old_field_type():
     date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
     date_db.insert('better_moments', {'name': '1969 Game 5', 'datetime': datetime.datetime(1969, 10, 16)})
 
+    assert date_db.get_field_type('datetime') == 'TIMESTAMP'
+
     # Check output type
     assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
 
@@ -337,3 +351,28 @@ def test_date_handling_with_old_field_type():
     assert count == 2
 
     date_db.dispose()
+
+
+def test_bytes():
+    path = pathlib.Path('some_bytes.db')
+    bytes_db = SQLiteDB(path)
+    bytes_db.tables = {
+        'data': ['id', 'name', 'the_data'],
+    }
+    bytes_db.field_types['id'] = 'int'
+    bytes_db.field_types['name'] = 'str'
+    bytes_db.field_types['the_data'] = 'bytes'
+    bytes_db.update_database_structure()
+
+    bytes_db.insert('data', {'name': 'a', 'the_data': b'asdf'})
+
+    assert bytes_db.get_field_type('the_data') == 'BLOB'
+
+    # Check output type
+    assert isinstance(bytes_db.lookup('the_data', 'data', {'name': 'a'}), bytes)
+
+    # Check clause generation
+    name = bytes_db.lookup('name', 'data', {'the_data': b'asdf'})
+    assert name == 'a'
+
+    bytes_db.dispose()

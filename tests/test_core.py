@@ -190,6 +190,13 @@ def test_column_insertion(basic_db):
     assert row['id']
 
 
+def test_field_types(basic_db):
+    assert basic_db.get_field_type('name') == 'TEXT'
+    assert basic_db.get_field_type('age') == 'INTEGER'
+    assert basic_db.get_field_type('grade') == 'REAL'
+    # assert basic_db.get_field_type('present') == 'INTEGER'
+
+
 def test_quiet_close(capsys):
     path = pathlib.Path('basic.db')
     db = SQLiteDB(path)
