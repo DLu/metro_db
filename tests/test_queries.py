@@ -337,3 +337,28 @@ def test_date_handling_with_old_field_type():
     assert count == 2
 
     date_db.dispose()
+
+
+def test_bytes():
+    path = pathlib.Path('some_bytes.db')
+    bytes_db = SQLiteDB(path)
+    bytes_db.tables = {
+        'data': ['id', 'name', 'the_data'],
+    }
+    bytes_db.field_types['id'] = 'int'
+    bytes_db.field_types['name'] = 'str'
+    bytes_db.field_types['the_data'] = 'bytes'
+    bytes_db.update_database_structure()
+
+    bytes_db.insert('data', {'name': 'a', 'the_data': b'asdf'})
+
+    assert bytes_db.get_field_type('the_data') == 'BLOB'
+
+    # Check output type
+    assert isinstance(bytes_db.lookup('the_data', 'data', {'name': 'a'}), bytes)
+
+    # Check clause generation
+    name = bytes_db.lookup('name', 'data', {'the_data': b'asdf'})
+    assert name == 'a'
+
+    bytes_db.dispose()

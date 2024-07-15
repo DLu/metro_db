@@ -7,6 +7,7 @@ PYTHON_SQL_TYPE_TRANSLATION = {
     'float': 'REAL',
     'str': 'TEXT',
     'datetime': 'TIMESTAMP',
+    'bytes': 'BLOB',
 }
 
 
