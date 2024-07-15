@@ -29,6 +29,7 @@ Every field has an associated "type", which is really TWO types, the **Python** 
 | `bool`      | `INTEGER`   |
 | `date`      | `DATE`      |
 | `datetime`  | `TIMESTAMP` |
+| `bytes`     | `BLOB`      |
 
 When you want to use a Python type in SQL, it will automatically be **adapted** into its corresponding SQL type.
 When you read a value from the SQL, it will automatically be **converted** into its corresponding Python type.
