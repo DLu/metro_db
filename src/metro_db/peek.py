@@ -7,6 +7,7 @@ from . import SQLiteDB
 
 try:
     import magic
+
     def is_database_file(path):
         return magic.from_file(path).startswith('SQLite')
 except ModuleNotFoundError:
