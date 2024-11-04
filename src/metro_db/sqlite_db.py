@@ -44,7 +44,7 @@ class SQLiteDB:
         self.primary_key_per_table = {}
         self.adapters = {}
         self.converters = {}
-        self.register_custom_type('bool', bool, int, lambda v: bool(v))
+        self.register_custom_type('bool', bool, int, lambda v: bool(int(v)))
         self.q_strings = {}
 
     def register_custom_type(self, name, type_, adapter_fn, converter_fn):
@@ -54,7 +54,7 @@ class SQLiteDB:
             name (str): The name of the custom type
             type_ (class): Python type
             adapter_fn (function): Translates the Python type to the sqlite3 type
-            converter_fn (function): Translates the sqlite3 to the Python type
+            converter_fn (function): Translates the bytestring to the Python type
         """
         self.adapters[name] = adapter_fn
         self.converters[name] = converter_fn
