@@ -14,6 +14,7 @@ maintainers = [
 ]
 
 dependencies = [
+  'argcomplete',
   'pyyaml',
   'tabulate',
 ]
@@ -33,6 +34,10 @@ classifiers = [
 metro_db = "metro_db.peek:main"
 
 [project.optional-dependencies]
+full = [
+  "python-magic",
+]
+
 test = [
   "pytest>=4",
   "pytest-cov>=2",
