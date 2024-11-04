@@ -82,6 +82,24 @@ def test_insertion_problem(basic_db):
     assert values == e.value.parameters
 
 
+def test_false_values(basic_db):
+    basic_db.update_database_structure()
+    basic_db.execute('INSERT INTO people (name, age, grade, present) VALUES(?, ?, ?, ?)', [0, 0, 0, 0])
+
+    assert basic_db.count('people') == 1
+
+    # Check return types
+    row = basic_db.query_one('SELECT * FROM people')
+    assert row['name'] == '0'
+    assert row['age'] == 0
+    assert row['grade'] == 0.0
+    assert isinstance(row['grade'], float)
+    assert row['present'] is False
+
+    # Check string representation of Row
+    assert str(row) == "{'name': '0', 'age': 0, 'grade': 0.0, 'present': False}"
+
+
 def test_empty_query(basic_db):
     basic_db.update_database_structure()
     assert basic_db.count('people') == 0
