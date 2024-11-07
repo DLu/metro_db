@@ -1,6 +1,7 @@
 import argparse
 import argcomplete
 import pathlib
+import os
 
 from . import SQLiteDB
 
@@ -40,8 +41,9 @@ def main(argv=None):
     db = SQLiteDB(args.db_path, uri_query='mode=rw')
     db.infer_database_structure()
 
+    term_size = os.get_terminal_size()
     for table in db.lookup_all('name', 'sqlite_master', 'WHERE type="table"'):
         if args.tables and table not in args.tables:
             continue
 
-        db.print_table(table, args.n, args.show_datatypes, args.style)
+        db.print_table(table, args.n, args.show_datatypes, args.style, max_width=term_size.columns)
