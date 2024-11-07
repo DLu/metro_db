@@ -5,12 +5,12 @@ import os
 
 from . import SQLiteDB
 
-try:
+try:  # pragma: no cover
     import magic
 
     def is_database_file(path):
         return magic.from_file(path).startswith('SQLite')
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     def is_database_file(path):
         return path.suffix in ['.db', '.sql']
 
@@ -41,7 +41,7 @@ def main(argv=None):
     db = SQLiteDB(args.db_path, uri_query='mode=rw')
     db.infer_database_structure()
 
-    try:
+    try:  # pragma: no cover
         term_size = os.get_terminal_size()
         max_width = term_size.columns
     except IOError:
