@@ -1,7 +1,6 @@
 import argparse
 import argcomplete
 import pathlib
-from tabulate import tabulate, multiline_formats
 
 from . import SQLiteDB
 
@@ -13,9 +12,6 @@ try:
 except ModuleNotFoundError:
     def is_database_file(path):
         return path.suffix in ['.db', '.sql']
-
-
-multiline_formats['fancy_outline'] = 'fancy_outline'  # Hack to fix tabulate bug
 
 
 def db_path_completer(prefix, **kwargs):
@@ -47,25 +43,5 @@ def main(argv=None):
     for table in db.lookup_all('name', 'sqlite_master', 'WHERE type="table"'):
         if args.tables and table not in args.tables:
             continue
-        query = f'SELECT * FROM {table}'
-        if args.n >= 0:
-            query += f' LIMIT {args.n}'
 
-        results = list(db.query(query))
-        headers = []
-        for key in db.tables[table]:
-            header = key
-            if args.show_datatypes:
-                header += '\n' + db.get_field_type(key)
-            headers.append(header)
-        count = db.count(table)
-        if args.n >= 0 and count > args.n:
-            extra_row = [f'...{count - args.n} more...']
-            while len(extra_row) < len(headers):
-                extra_row.append('...')
-            results.append(extra_row)
-        output = tabulate(results, headers=headers, tablefmt=args.style)
-        length = max(len(s) for s in output.split('\n'))
-        print(('{:^' + str(length) + '}').format(table))
-        print(output)
-        print()
+        db.print_table(table, args.n, args.show_datatypes, args.style)
