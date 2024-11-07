@@ -36,6 +36,8 @@ def main(argv=None):
     parser.add_argument('n', nargs='?', default=10, type=int,
                         help='Number of rows of each table to display. -1 for all')
     parser.add_argument('-s', '--style', choices=['simple', 'grid', 'plain', 'fancy_outline'], default='fancy_outline')
+    parser.add_argument('-t', '--tables', metavar='table', nargs='+')
+    parser.add_argument('-d', '--show-datatypes', action='store_true')
     argcomplete.autocomplete(parser, always_complete_options=False)
     args = parser.parse_args(argv)
 
@@ -43,6 +45,8 @@ def main(argv=None):
     db.infer_database_structure()
 
     for table in db.lookup_all('name', 'sqlite_master', 'WHERE type="table"'):
+        if args.tables and table not in args.tables:
+            continue
         query = f'SELECT * FROM {table}'
         if args.n >= 0:
             query += f' LIMIT {args.n}'
@@ -50,8 +54,10 @@ def main(argv=None):
         results = list(db.query(query))
         headers = []
         for key in db.tables[table]:
-            type_name = db.get_field_type(key)
-            headers.append(f'{key}\n({type_name})')
+            header = key
+            if args.show_datatypes:
+                header += '\n' + db.get_field_type(key)
+            headers.append(header)
         count = db.count(table)
         if args.n >= 0 and count > args.n:
             extra_row = [f'...{count - args.n} more...']
