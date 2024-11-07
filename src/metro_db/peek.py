@@ -34,16 +34,20 @@ def main(argv=None):
                         help='Number of rows of each table to display. -1 for all')
     parser.add_argument('-s', '--style', choices=['simple', 'grid', 'plain', 'fancy_outline'], default='fancy_outline')
     parser.add_argument('-t', '--tables', metavar='table', nargs='+')
-    parser.add_argument('-d', '--show-datatypes', action='store_true')
+    parser.add_argument('-d', '--hide-datatypes', action='store_true')
     argcomplete.autocomplete(parser, always_complete_options=False)
     args = parser.parse_args(argv)
 
     db = SQLiteDB(args.db_path, uri_query='mode=rw')
     db.infer_database_structure()
 
-    term_size = os.get_terminal_size()
+    try:
+        term_size = os.get_terminal_size()
+        max_width = term_size.columns
+    except IOError:
+        max_width = None
     for table in db.lookup_all('name', 'sqlite_master', 'WHERE type="table"'):
         if args.tables and table not in args.tables:
             continue
 
-        db.print_table(table, args.n, args.show_datatypes, args.style, max_width=term_size.columns)
+        db.print_table(table, args.n, args.hide_datatypes, args.style, max_width=max_width)
