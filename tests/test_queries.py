@@ -322,6 +322,27 @@ def test_datetime_handling(date_db):
     assert count == 2
 
 
+def test_timezone_handling(date_db):
+    game_1 = datetime.datetime(2015, 10, 27, 20, 7).replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-6)))
+    game_6 = datetime.datetime(1986, 10, 25, 20, 30).replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-5)))
+    game_2 = datetime.datetime(2024, 10, 14, 13, 8).replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-8)))
+    date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': game_1})
+    date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': game_6})
+    date_db.insert('better_moments', {'name': '2024 Game 2', 'datetime': game_2})
+
+    assert date_db.get_field_type('datetime') == 'TIMESTAMP'
+
+    # Check output type
+    assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
+
+    # Check clause generation
+    event_name = date_db.lookup('name', 'better_moments', {'datetime': game_6})
+    assert event_name == '1986 Game 6'
+
+    count = date_db.count('better_moments', clause='WHERE datetime > "1988-01-01"')
+    assert count == 2
+
+
 def test_date_handling_with_old_field_type():
     # Note: For backwards compatibility, we ensure that declaring the fieldtype "timestamp" still works
     path = pathlib.Path('old_history.db')
