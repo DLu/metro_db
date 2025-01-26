@@ -1,5 +1,5 @@
 import sqlite3
-import sys
+import datetime
 
 from .types import DatabaseError, Row, FlexibleIterator
 
@@ -49,16 +49,14 @@ class SQLiteDB:
 
         # Default Converters and Adapters are deprecated in Python 3.12
         # https://discuss.python.org/t/deprecate-default-built-in-sqlite3-converters-and-adapters/15781
-        if sys.version_info >= (3, 12):
-            import datetime
-            self.register_custom_type('TIMESTAMP', datetime.datetime,
-                                      lambda dt: dt.isoformat(),
-                                      lambda s: datetime.datetime.fromisoformat(s.decode()),
-                                      )
-            self.register_custom_type('DATE', datetime.date,
-                                      lambda dt: dt.isoformat(),
-                                      lambda s: datetime.date.fromisoformat(s.decode()),
-                                      )
+        self.register_custom_type('TIMESTAMP', datetime.datetime,
+                                  lambda dt: dt.isoformat(),
+                                  lambda s: datetime.datetime.fromisoformat(s.decode()),
+                                  )
+        self.register_custom_type('DATE', datetime.date,
+                                  lambda dt: dt.isoformat(),
+                                  lambda s: datetime.date.fromisoformat(s.decode()),
+                                  )
 
         self.q_strings = {}
 
