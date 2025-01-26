@@ -12,6 +12,10 @@ def format_value(self, field, value):
         str: String to be inserted into an SQL query.
     """
     ft = self.get_field_type(field)
+
+    if ft in self.adapters:
+        value = self.adapters[ft](value)
+
     if ft == 'TEXT':
         if not isinstance(value, str):
             value = str(value)
@@ -22,8 +26,6 @@ def format_value(self, field, value):
                 return f"'{value}'"
         else:
             return f'"{value}"'
-    elif ft in self.adapters:
-        return self.adapters[ft](value)
     elif ft in ['DATE', 'TIMESTAMP']:
         return f'"{value}"'
     elif ft == 'BLOB' and isinstance(value, bytes):
