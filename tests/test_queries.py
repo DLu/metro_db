@@ -103,6 +103,12 @@ def test_lookup(demo_db):
     assert demo_db.lookup('hits', 'batters', {'year': 1999, 'name': '"Piazza"'}) is None
     assert demo_db.lookup('hits', 'batters', {'year': 1999, 'name': 5}) is None
 
+    # Check some operations
+    assert demo_db.lookup('MAX(hits)', 'batters') == 197
+    assert demo_db.lookup('MIN(hits)', 'batters') == 137
+    assert int(demo_db.lookup('AVG(hits)', 'batters')) == 165
+    assert demo_db.lookup('SUM(hits)', 'batters') == 1493
+
 
 def test_dict_lookup(demo_db):
     d = demo_db.dict_lookup('name', 'hits', 'batters', 'WHERE year == 1999')
@@ -320,6 +326,10 @@ def test_datetime_handling(date_db):
 
     count = date_db.count('better_moments', clause='WHERE datetime > "1984-01-01"')
     assert count == 2
+
+    # Check some operations
+    assert date_db.lookup('MAX(datetime)', 'better_moments') == datetime.datetime(2015, 10, 27, 20, 7)
+    assert date_db.lookup('MIN(datetime)', 'better_moments') == datetime.datetime(1969, 10, 16)
 
 
 def test_timezone_handling(date_db):
