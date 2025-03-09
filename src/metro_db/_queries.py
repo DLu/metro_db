@@ -1,4 +1,4 @@
-from .types import FlexibleIterator
+from .types import DatabaseError, FlexibleIterator
 
 
 def format_value(self, field, value):
@@ -205,11 +205,13 @@ def insert(self, table, row_dict):
     Returns:
         int: the lastrowid (i.e. probably the primary key of the inserted row)
     """
+    n = len(row_dict)
+    if n > len(self.tables[table]):
+        raise DatabaseError('Too many values in dictionary', f'insert({table}, {row_dict})')
     keys = row_dict.keys()
 
     values = [row_dict.get(k) for k in keys]
     key_s = ', '.join(keys)
-    n = len(values)
 
     cur = self.execute(f'INSERT INTO {table} ({key_s}) VALUES({self.q_strings[n]})', values)
     return cur.lastrowid
@@ -225,6 +227,8 @@ def bulk_insert(self, table, fields, rows):
                         The length of each tuple should match the length of fields
     """
     n = len(fields)
+    if n > len(self.tables[table]):
+        raise DatabaseError('Too many values in dictionary', f'bulk_insert({table}, {fields}, ...)')
     key_s = ', '.join(fields)
     self.execute_many(f'INSERT INTO {table} ({key_s}) VALUES({self.q_strings[n]})', rows)
 
