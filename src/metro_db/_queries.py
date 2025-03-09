@@ -34,25 +34,35 @@ def format_value(self, field, value):
         return str(value)
 
 
-def generate_clause(self, value_dict, operator='AND', full=True):
-    """Generate a string clause that matches the value dictionary. If full, include the keyword WHERE
+def generate_clause(self, clause_spec, operator='AND', full=True, table=None):
+    """Generate a string clause based on the clause spec. If full, include the keyword WHERE
 
     Args:
-        value_dict (dict): Values that should match. Keys are string fieldnames.
+        clause_spec: If a dict, the keys are the string fieldnames and the values are the values that must match.
+                     Otherwise, assume that the clause_spec is the value of the primary key
         operator (str): Operator to link subclauses with. Default is AND.
         full (bool): If true, includes the WHERE string at the beginning.
 
     Returns:
         str
     """
-    if not value_dict:
+    if not clause_spec:
         return ''
     pieces = []
-    for key, value in value_dict.items():
-        if value is None:
-            pieces.append(f'{key} IS NULL')
-        else:
-            pieces.append('{}={}'.format(key, self.format_value(key, value)))
+    if isinstance(clause_spec, dict):
+        for key, value in clause_spec.items():
+            if value is None:
+                pieces.append(f'{key} IS NULL')
+            else:
+                pieces.append('{}={}'.format(key, self.format_value(key, value)))
+    elif not table:
+        raise DatabaseError(f'Need to specify table name for clause_spec type {type(clause_spec)}',
+                            f'generate_clause({clause_spec})')
+    elif table not in self.primary_key_per_table:
+        raise DatabaseError(f'Table {table} does not have a defined primary key', f'generate_clause({clause_spec})')
+    else:
+        key = self.primary_key_per_table[table]
+        pieces.append('{}={}'.format(key, self.format_value(key, clause_spec)))
 
     clause = f' {operator} '.join(pieces)
     if full:
@@ -67,7 +77,7 @@ def lookup_all(self, field, table, clause='', distinct=False):
     Args:
         field (str): Name of field to return
         table (str): Name of table to query
-        clause (str/dict): Optional clause to add to end of query. If dict, use generate_clause to translate to str.
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
         distinct (bool): If true, add DISTINCT keyword before field name
 
     Returns:
@@ -85,7 +95,7 @@ def lookup(self, field, table, clause=''):
     Args:
         field (str): Name of field to return
         table (str): Name of table to query
-        clause (str/dict): Optional clause to add to end of query. If dict, use generate_clause to translate to str.
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
 
     Returns:
         The value or None"""
@@ -101,7 +111,7 @@ def count(self, table, clause=''):
 
     Args:
         table (str): Name of table to query
-        clause (str/dict): Optional clause to add to query. If dict, use generate_clause to translate to str.
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
 
     Returns:
         int: Number of rows in the table (that match the clause)
@@ -116,7 +126,7 @@ def dict_lookup(self, key_field, value_field, table, clause=''):
         key_field (str): The name of the field that should be the key in the dictionary
         value_field (str): The name of the field that should be the value in the dictionary
         table (str): The name of the table to query
-        clause (str/dict): Optional clause to add to query. If dict, use generate_clause to translate to str.
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
 
     Returns:
         dict: All of the rows returned by the query formatted into a dictionary
@@ -135,7 +145,7 @@ def table_as_dict(self, table, key_field='id', fields=None, clause=''):
         table (str): The name of the table to query
         key_field (str): The name of the field that should be the key in the dictionary
         fields ([str], None): A list of fields for the rows, or if None, use *
-        clause (str/dict): Optional clause to add to query. If dict, use generate_clause to translate to str.
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
 
     Returns:
         dict: All of the rows returned by the query formatted into a dictionary
@@ -173,7 +183,7 @@ def sum(self, table, value_field, clause=''):
     Args:
         table (str): The name of the table to query
         value_field (str): The name of the field (presumed to have integer type)
-        clause (str/dict): Optional clause to add to query. If dict, use generate_clause to translate to str.
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
 
     Returns:
         int: The sum of all the values of value_field matching the query.
@@ -294,3 +304,16 @@ def unique_insert(self, table, row_dict):
         int: The row id of the new or old row (emulating lastrowid)
     """
     return self.update(table, row_dict, row_dict.keys())
+
+
+def delete(self, table, clause=''):
+    """Run a DELETE command with the specified table.
+
+    Args:
+        table (str): The name of the table
+        clause (str/any): Optional clause to add to command. Use generate_clause to translate to str as needed.
+    """
+
+    if not isinstance(clause, str):
+        clause = self.generate_clause(clause)
+    self.execute(f'DELETE FROM {table} {clause}')
