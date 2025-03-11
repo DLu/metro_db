@@ -85,7 +85,7 @@ def lookup_all(self, field, table, clause='', distinct=False):
     """
     field_s = field if not distinct else f'DISTINCT {field}'
     if not isinstance(clause, str):
-        clause = self.generate_clause(clause)
+        clause = self.generate_clause(clause, table=table)
     return FlexibleIterator(row[0] for row in self.query(f'SELECT {field_s} FROM {table} {clause}'))
 
 
@@ -100,7 +100,7 @@ def lookup(self, field, table, clause=''):
     Returns:
         The value or None"""
     if not isinstance(clause, str):
-        clause = self.generate_clause(clause)
+        clause = self.generate_clause(clause, table=table)
     result = self.query_one(f'SELECT {field} FROM {table} {clause}')
     if result:
         return result[0]
@@ -133,7 +133,7 @@ def dict_lookup(self, key_field, value_field, table, clause=''):
 
     """
     if not isinstance(clause, str):
-        clause = self.generate_clause(clause)
+        clause = self.generate_clause(clause, table=table)
     results = self.query(f'SELECT {key_field}, {value_field} FROM {table} {clause}')
     return {d[key_field]: d[value_field] for d in results}
 
@@ -152,7 +152,7 @@ def table_as_dict(self, table, key_field='id', fields=None, clause=''):
 
     """
     if not isinstance(clause, str):
-        clause = self.generate_clause(clause)
+        clause = self.generate_clause(clause, table=table)
     if fields is None:
         field_s = '*'
     else:
@@ -315,5 +315,5 @@ def delete(self, table, clause=''):
     """
 
     if not isinstance(clause, str):
-        clause = self.generate_clause(clause)
+        clause = self.generate_clause(clause, table=table)
     self.execute(f'DELETE FROM {table} {clause}')

@@ -109,6 +109,12 @@ def test_lookup(demo_db):
     assert int(demo_db.lookup('AVG(hits)', 'batters')) == 165
     assert demo_db.lookup('SUM(hits)', 'batters') == 1493
 
+    # Generate clause with ID
+    assert demo_db.lookup('name', 'batters', 1) == 'Olerud'
+
+    with pytest.raises(DatabaseError):
+        demo_db.generate_clause(1)  # No table
+
 
 def test_dict_lookup(demo_db):
     d = demo_db.dict_lookup('name', 'hits', 'batters', 'WHERE year == 1999')
@@ -280,6 +286,17 @@ def test_all_field_update(demo_without_id_db):
     row_id = db.update('batters', {'name': 'Olerud', 'year': 1998}, ['name', 'year'])
     assert db.count('batters') == 4
     assert row_id is None
+
+
+def test_no_key_clause_gen(demo_without_id_db):
+    db = demo_without_id_db
+    assert 'batters' not in db.primary_key_per_table
+
+    # Check clause generation
+    with pytest.raises(DatabaseError):
+        db.generate_clause(1993, table='batters')
+    with pytest.raises(DatabaseError):
+        db.lookup('name', 'year', 1998)
 
 
 def test_accidental_open():
