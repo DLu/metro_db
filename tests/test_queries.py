@@ -238,6 +238,18 @@ def test_unique_insert(demo_db):
     assert demo_db.count('batters') == 10
 
 
+def test_deletion(demo_db):
+    assert demo_db.count('batters') == 9
+    demo_db.delete('batters', 'WHERE name NOT LIKE "%z%"')
+    assert demo_db.count('batters') == 7
+    demo_db.delete('batters', {'position': Position.SECOND_BASE})
+    assert demo_db.count('batters') == 5
+    demo_db.delete('batters', {'year': 2000})
+    assert demo_db.count('batters') == 3
+    demo_db.delete('batters')
+    assert demo_db.count('batters') == 0
+
+
 def test_none(demo_db):
     assert demo_db.count('batters', clause={'name': None}) == 0
     demo_db.insert('batters', {'year': 2002, 'hits': 5})

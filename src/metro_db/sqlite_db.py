@@ -284,6 +284,7 @@ class SQLiteDB:
     # Bonus "syntactic sugar" is provided in queries.py
     from ._queries import lookup_all, lookup, count, dict_lookup, unique_counts, sum_counts, insert, bulk_insert
     from ._queries import format_value, generate_clause, sum, update, unique_insert, table_as_dict
+    from ._queries import delete
 
     # Bonus clean printing implemented in printable.py
     from ._printable import print_table
