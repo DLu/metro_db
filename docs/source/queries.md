@@ -190,6 +190,14 @@ db.unique_insert('movie', {'title': 'Monty Python and the Holy Grail', 'year': 2
                                                                                        # remake it someday.
 ```
 
+### Delete
+`delete` is a convenience wrapper for running commands of the type `'DELETE FROM ...'` with the standard clause generation logic.
+
+```python
+db.delete('movie', 'WHERE year <= 1974')
+db.delete('movie', {'year': 1975})
+```
+
 ## Even Fancier SQL
 ### Count
 Count the number of matching rows with `count`
