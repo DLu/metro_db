@@ -290,3 +290,16 @@ def unique_insert(self, table, row_dict):
         int: The row id of the new or old row (emulating lastrowid)
     """
     return self.update(table, row_dict, row_dict.keys())
+
+
+def delete(self, table, clause=''):
+    """Run a DELETE command with the specified table.
+
+    Args:
+        table (str): The name of the table
+        clause (str/dict): Optional clause to add to command. If dict, use generate_clause to translate to str.
+    """
+
+    if not isinstance(clause, str):
+        clause = self.generate_clause(clause)
+    self.execute(f'DELETE FROM {table} {clause}')
