@@ -103,9 +103,10 @@ Look! No SQL here!
 
 
 ### Generating Clauses
-In general, all of the methods here that take a clause can use one of two options:
+In general, all of the methods here that take a clause that can use one of three forms:
  1. A string that starts with `WHERE`
  2. A dictionary of values that must match exactly.
+ 3. The value of the primary key for the table
 
 If a dictionary is passed in, it will be converted to an SQL `WHERE` clause via the `generate_clause` method. Note that the quotation marks around the value in the clause will be inserted automatically, using the `format_value` method which uses the column's datatype to determine any necessary wrapping.
 
@@ -114,6 +115,8 @@ If there are multiple fields in the dictionary, the default behavior is to gener
 There are a few limitations to using the dictionary-based approach:
  * There is no support for complex logical operations, e.g. combining AND/OR.
  * There is no support for operators other than `=`, e.g. `>`, `<`, `LIKE`, etc.
+
+If some (non-string) value is passed in, then an SQL `WHERE` clause will be generated to check if the primary key for the table matches the value.
 
 
 ### Lookup All
