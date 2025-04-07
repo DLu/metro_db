@@ -166,14 +166,38 @@ def test_insertion(demo_db):
     assert new_id == 10
     assert demo_db.count('batters') == 10
 
+    with pytest.raises(DatabaseError):
+        # Insert with unknown column doubles
+        demo_db.insert('batters', {'name': 'Abayani', 'hits': 79, 'year': 1999,
+                                   'doubles': 18, 'position': Position.LEFT_FIELD})
+
+    with pytest.raises(DatabaseError):
+        # Insert with too many values
+        demo_db.insert('batters', {'name': 'Abayani', 'hits': 82, 'year': 2001,
+                                   'doubles': 14, 'triples': 2, 'position': Position.LEFT_FIELD})
+
 
 def test_bulk_insert(demo_db):
     demo_db.bulk_insert('batters', ['name', 'year', 'hits', 'position'], [
         ('Ordóñez', 1999, 134, Position.SHORTSTOP),
-        ('Ventrua', 1999, 177, Position.THIRD_BASE),
+        ('Ventura', 1999, 177, Position.THIRD_BASE),
     ])
 
     assert demo_db.count('batters') == 11
+
+    with pytest.raises(DatabaseError):
+        # Insert with unknown column doubles
+        demo_db.bulk_insert('batters', ['name', 'year', 'hits', 'doubles', 'position'], [
+            ('Bordick', 2000, 50, 8, Position.SHORTSTOP),
+            ('Ventura', 2000, 109, 23, Position.THIRD_BASE),
+        ])
+
+    with pytest.raises(DatabaseError):
+        # Insert with too many values
+        demo_db.bulk_insert('batters', ['name', 'year', 'hits', 'doubles', 'triples', 'position'], [
+            ('Ordóñez', 2001, 114, 24, 4, Position.SHORTSTOP),
+            ('Ventura', 2001, 108, 20, 0, Position.THIRD_BASE),
+        ])
 
 
 def test_update(demo_db):
