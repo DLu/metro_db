@@ -67,7 +67,7 @@ class SQLiteDB:
             name (str): The name of the custom type
             type_ (class): Python type
             adapter_fn (function): Translates the Python type to the sqlite3 type
-            converter_fn (function): Translates the sqlite3 to the Python type
+            converter_fn (function): Translates the bytestring to the Python type
         """
         self.adapters[name] = adapter_fn
         self.converters[name] = converter_fn
