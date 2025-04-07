@@ -103,6 +103,12 @@ def test_lookup(demo_db):
     assert demo_db.lookup('hits', 'batters', {'year': 1999, 'name': '"Piazza"'}) is None
     assert demo_db.lookup('hits', 'batters', {'year': 1999, 'name': 5}) is None
 
+    # Check some operations
+    assert demo_db.lookup('MAX(hits)', 'batters') == 197
+    assert demo_db.lookup('MIN(hits)', 'batters') == 137
+    assert int(demo_db.lookup('AVG(hits)', 'batters')) == 165
+    assert demo_db.lookup('SUM(hits)', 'batters') == 1493
+
     # Generate clause with ID
     assert demo_db.lookup('name', 'batters', 1) == 'Olerud'
 
@@ -251,6 +257,13 @@ def test_none(demo_db):
     assert demo_db.count('batters', clause=clause) == 1
 
 
+def test_fieldtypes(demo_db):
+    assert demo_db.get_field_type('id') == 'INTEGER'
+    assert demo_db.get_field_type('name') == 'TEXT'
+    assert demo_db.get_field_type('year') == 'INTEGER'
+    assert demo_db.get_field_type('hits') == 'INTEGER'
+
+
 @pytest.fixture()
 def demo_without_id_db():
     path = pathlib.Path('all_field.db')
@@ -338,6 +351,8 @@ def test_date_handling(date_db):
     date_db.insert('great_moments', {'name': 'Beethoven\'s Ninth Symphony', 'date': '1824-05-07'})
     date_db.update('great_moments', {'name': 'Rosalind Franklin born', 'date': datetime.date(1920, 7, 25)}, 'name')
 
+    assert date_db.get_field_type('date') == 'DATE'
+
     # Check output type
     assert isinstance(date_db.lookup('date', 'great_moments', {'name': "Beethoven's Ninth Symphony"}),
                       datetime.date)
@@ -351,6 +366,8 @@ def test_datetime_handling(date_db):
     date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': datetime.datetime(2015, 10, 27, 20, 7)})
     date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
     date_db.insert('better_moments', {'name': '1969 Game 5', 'datetime': datetime.datetime(1969, 10, 16)})
+
+    assert date_db.get_field_type('datetime') == 'TIMESTAMP'
 
     # Check output type
     assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
@@ -370,6 +387,8 @@ def test_timezone_handling(date_db):
     date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': game_1})
     date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': game_6})
     date_db.insert('better_moments', {'name': '2024 Game 2', 'datetime': game_2})
+
+    assert date_db.get_field_type('datetime') == 'TIMESTAMP'
 
     # Check output type
     assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
@@ -397,6 +416,8 @@ def test_date_handling_with_old_field_type():
     date_db.insert('better_moments', {'name': '2015 Game 1', 'datetime': datetime.datetime(2015, 10, 27, 20, 7)})
     date_db.insert('better_moments', {'name': '1986 Game 6', 'datetime': datetime.datetime(1986, 10, 25, 20, 30)})
     date_db.insert('better_moments', {'name': '1969 Game 5', 'datetime': datetime.datetime(1969, 10, 16)})
+
+    assert date_db.get_field_type('datetime') == 'TIMESTAMP'
 
     # Check output type
     assert isinstance(date_db.lookup('datetime', 'better_moments', {'name': '2015 Game 1'}), datetime.datetime)
