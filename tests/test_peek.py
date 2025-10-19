@@ -1,7 +1,7 @@
 import pathlib
 import pytest
 from metro_db import SQLiteDB
-from metro_db.peek import main as peek
+from metro_db.peek import main as peek, db_path_completer
 
 
 @pytest.fixture()
@@ -73,3 +73,18 @@ def test_peek_two_single(two_table_db, capsys):
     captured = capsys.readouterr()
     assert captured.out == open('tests/out/two_first.txt').read()
     assert captured.err == ''
+
+
+def test_path_completer():
+    folder = 'tests/completions'
+    all_options = db_path_completer(folder)
+    assert len(all_options) == 2
+    assert folder + '/foo.db' in all_options
+    assert folder + '/bar.db' in all_options
+
+    some_options = db_path_completer(folder + '/f')
+    assert len(some_options) == 1
+    assert folder + '/foo.db' in some_options
+
+    no_options = db_path_completer(folder + '/n')
+    assert len(no_options) == 0

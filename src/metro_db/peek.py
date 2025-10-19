@@ -17,8 +17,12 @@ except ModuleNotFoundError:  # pragma: no cover
 
 def db_path_completer(prefix, **kwargs):
     current = pathlib.Path(prefix)
-    folder = current.parent
-    pattern = current.name + '*'
+    if current.is_dir():
+        folder = current
+        pattern = '*'
+    else:
+        folder = current.parent
+        pattern = current.name + '*'
     options = []
     for option_path in folder.glob(pattern):
         if option_path.is_file() and is_database_file(option_path):
