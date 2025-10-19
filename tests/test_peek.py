@@ -41,3 +41,35 @@ def test_peek_n10(basic_db, capsys):
     captured = capsys.readouterr()
     assert captured.out == open('tests/out/basic_out.txt').read()
     assert captured.err == ''
+
+
+@pytest.fixture()
+def two_table_db():
+    path = pathlib.Path('dos.db')
+    db = SQLiteDB(path)
+    db.tables['first_names'] = ['id', 'name']
+    db.tables['last_names'] = ['id', 'name']
+    db.field_types['id'] = 'int'
+    db.update_database_structure()
+
+    db.execute_many('INSERT INTO first_names (name) VALUES(?)',
+                    [['David'], ['Elise']])
+    db.execute_many('INSERT INTO last_names (name) VALUES(?)',
+                    [['Lu'], ['Peterson']])
+    db.write()
+    yield db
+    db.dispose()
+
+
+def test_peek_two(two_table_db, capsys):
+    peek(['dos.db'])
+    captured = capsys.readouterr()
+    assert captured.out == open('tests/out/two_out.txt').read()
+    assert captured.err == ''
+
+
+def test_peek_two_single(two_table_db, capsys):
+    peek(['dos.db', '-t', 'first_names'])
+    captured = capsys.readouterr()
+    assert captured.out == open('tests/out/two_first.txt').read()
+    assert captured.err == ''
