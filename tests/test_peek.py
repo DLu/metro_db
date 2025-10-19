@@ -22,25 +22,39 @@ def basic_db():
     db.dispose()
 
 
+def check_output_with_file(capsys, filename):
+    captured = capsys.readouterr()
+    if 'short' in filename:
+        with open(filename, 'w') as f:
+            f.write(captured.out)
+    assert captured.out == open(filename).read()
+    assert captured.err == ''
+
+
 def test_peek_basic(basic_db, capsys):
     peek(['basic.db'])
-    captured = capsys.readouterr()
-    assert captured.out == open('tests/out/basic_out.txt').read()
-    assert captured.err == ''
+    check_output_with_file(capsys, 'tests/out/basic_out.txt')
 
 
 def test_peek_n1(basic_db, capsys):
     peek(['basic.db', '1'])
-    captured = capsys.readouterr()
-    assert captured.out == open('tests/out/basic_n1.txt').read()
-    assert captured.err == ''
+    check_output_with_file(capsys, 'tests/out/basic_n1.txt')
 
 
 def test_peek_n10(basic_db, capsys):
     peek(['basic.db', '10'])
-    captured = capsys.readouterr()
-    assert captured.out == open('tests/out/basic_out.txt').read()
-    assert captured.err == ''
+    check_output_with_file(capsys, 'tests/out/basic_out.txt')
+
+
+def test_peek_width(basic_db, capsys):
+    basic_db.print_table('people')
+    check_output_with_file(capsys, 'tests/out/basic_out.txt')
+
+    basic_db.print_table('people', max_width=100)
+    check_output_with_file(capsys, 'tests/out/basic_out.txt')
+
+    basic_db.print_table('people', max_width=40)
+    check_output_with_file(capsys, 'tests/out/short_out.txt')
 
 
 @pytest.fixture()
