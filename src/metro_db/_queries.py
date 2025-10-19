@@ -71,6 +71,29 @@ def generate_clause(self, clause_spec, operator='AND', full=True, table=None):
         return clause
 
 
+def generate_select_query(self, table, fields=[], clause='', order=''):
+    query = 'SELECT '
+    if fields:
+        query += ', '.join(fields)
+    else:
+        query += '*'
+    query += f' FROM {table} '
+    if not isinstance(clause, str):
+        clause = self.generate_clause(clause, table=table)
+    query += clause
+    if order:
+        query += f' ORDER BY {order}'
+    return query
+
+
+def select(self, table, fields=[], clause='', order=''):
+    return self.query(self.generate_select_query(table, fields, clause, order))
+
+
+def select_one(self, table, fields=[], clause='', order=''):
+    return self.query_one(self.generate_select_query(table, fields, clause, order))
+
+
 def lookup_all(self, field, table, clause='', distinct=False):
     """Run a SELECT command with the specified field, table and clause, return the matching values.
 
