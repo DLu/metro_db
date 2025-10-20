@@ -24,9 +24,7 @@ def basic_db():
 
 def check_output_with_file(capsys, filename):
     captured = capsys.readouterr()
-    if 'short' in filename:
-        with open(filename, 'w') as f:
-            f.write(captured.out)
+
     assert captured.out == open(filename).read()
     assert captured.err == ''
 
