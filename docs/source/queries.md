@@ -131,6 +131,29 @@ for title in db.lookup_all('title', 'movie'):
 In addition to specifying a clause, you can also add the flag `distinct=True` to ensure uniqueness in the returned results.
 
 
+### Select
+If you want to get multiple fields / do a more general `SELECT` query, then you can use the `select()` method. Here's the raw SQL approach:
+
+```python
+for row in db.query('SELECT title, year FROM movies WHERE year >= 1974 ORDER BY year'):
+    print(row)
+```
+
+Here is the Python-ic version:
+
+```python
+for row in db.select(table='movies',
+                     fields=['title', 'year'],
+                     clause='WHERE year >= 1974',
+                     order='year'):
+    print(row)
+```
+
+Note that the parameter names are illustrative here, and you can leave them out. The only required field is the table name.
+
+There is also `select_one()` if you just want one row.
+
+
 ### Insert
 The `insert` method wraps the `INSERT` SQL execution. Compare the raw SQL approach:
 

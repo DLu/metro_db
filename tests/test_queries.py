@@ -41,7 +41,7 @@ def demo_db():
 
 
 def test_query(demo_db):
-    results = demo_db.query('SELECT * FROM batters')
+    results = demo_db.select('batters')
     c = 0
     names = set()
     for row in results:
@@ -52,7 +52,7 @@ def test_query(demo_db):
 
 
 def test_query_as_list(demo_db):
-    results = demo_db.query('SELECT * FROM batters ORDER BY -hits')
+    results = demo_db.select('batters', order='-hits')
     assert len(results) == 9
 
     assert results[0]['name'] == 'Olerud'
@@ -341,7 +341,7 @@ def test_date_handling(date_db):
     assert date_db.count('great_moments') == 1
 
     # Check return types
-    row = date_db.query_one('SELECT * FROM great_moments')
+    row = date_db.select_one('great_moments')
     assert row['id'] == 1
     assert row['name'] == 'Declaration of Independence'
     assert row['date'] == datetime.date(1776, 7, 4)

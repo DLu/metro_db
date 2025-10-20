@@ -71,6 +71,29 @@ def generate_clause(self, clause_spec, operator='AND', full=True, table=None):
         return clause
 
 
+def generate_select_query(self, table, fields=[], clause='', order=''):
+    query = 'SELECT '
+    if fields:
+        query += ', '.join(fields)
+    else:
+        query += '*'
+    query += f' FROM {table} '
+    if not isinstance(clause, str):
+        clause = self.generate_clause(clause, table=table)
+    query += clause
+    if order:
+        query += f' ORDER BY {order}'
+    return query
+
+
+def select(self, table, fields=[], clause='', order=''):
+    return self.query(self.generate_select_query(table, fields, clause, order))
+
+
+def select_one(self, table, fields=[], clause='', order=''):
+    return self.query_one(self.generate_select_query(table, fields, clause, order))
+
+
 def lookup_all(self, field, table, clause='', distinct=False):
     """Run a SELECT command with the specified field, table and clause, return the matching values.
 
@@ -84,9 +107,7 @@ def lookup_all(self, field, table, clause='', distinct=False):
         iterator: All the values that match the query
     """
     field_s = field if not distinct else f'DISTINCT {field}'
-    if not isinstance(clause, str):
-        clause = self.generate_clause(clause, table=table)
-    return FlexibleIterator(row[0] for row in self.query(f'SELECT {field_s} FROM {table} {clause}'))
+    return FlexibleIterator(row[0] for row in self.select(table, [field_s], clause))
 
 
 def lookup(self, field, table, clause=''):
@@ -99,9 +120,7 @@ def lookup(self, field, table, clause=''):
 
     Returns:
         The value or None"""
-    if not isinstance(clause, str):
-        clause = self.generate_clause(clause, table=table)
-    result = self.query_one(f'SELECT {field} FROM {table} {clause}')
+    result = self.select_one(table, [field], clause)
     if result:
         return result[0]
 
@@ -132,9 +151,7 @@ def dict_lookup(self, key_field, value_field, table, clause=''):
         dict: All of the rows returned by the query formatted into a dictionary
 
     """
-    if not isinstance(clause, str):
-        clause = self.generate_clause(clause, table=table)
-    results = self.query(f'SELECT {key_field}, {value_field} FROM {table} {clause}')
+    results = self.select(table, [key_field, value_field], clause)
     return {d[key_field]: d[value_field] for d in results}
 
 
@@ -151,16 +168,10 @@ def table_as_dict(self, table, key_field='id', fields=None, clause=''):
         dict: All of the rows returned by the query formatted into a dictionary
 
     """
-    if not isinstance(clause, str):
-        clause = self.generate_clause(clause, table=table)
-    if fields is None:
-        field_s = '*'
-    else:
-        field_s = ', '.join(fields)
-        if key_field not in fields:
-            field_s += f', {key_field}'
+    if fields and key_field not in fields:
+        fields.append(key_field)
 
-    results = self.query(f'SELECT {field_s} FROM {table} {clause}')
+    results = self.select(table, fields, clause)
     return {d[key_field]: d for d in results}
 
 
@@ -260,11 +271,11 @@ def update(self, table, row_dict, replace_key='id'):
     else:
         clause = self.generate_clause({key: row_dict[key] for key in replace_key})
 
-    existing = self.query_one(f'SELECT * FROM {table} {clause}')
+    existing = self.select_one(table, clause=clause)
     if not existing:
         # If no matches, just insert
         self.insert(table, row_dict)
-        existing = self.query_one(f'SELECT * FROM {table} {clause}')
+        existing = self.select_one(table, clause=clause)
     else:
         field_qs = []
         values = []
