@@ -56,6 +56,14 @@ def test_query_as_list(demo_db):
     assert len(results) == 9
 
     assert results[0]['name'] == 'Olerud'
+    assert results[0]['hits'] == 197
+
+
+def test_full_select(demo_db):
+    results = demo_db.select('batters', ['name', 'SUM(hits)'], 'WHERE year < 2000', '-SUM(hits)', 'name')
+    assert len(results) == 3
+    assert results[0]['name'] == 'Olerud'
+    assert results[0]['SUM(hits)'] == 197 + 173
 
 
 def test_lookup_all(demo_db):
@@ -248,6 +256,25 @@ def test_deletion(demo_db):
     assert demo_db.count('batters') == 3
     demo_db.delete('batters')
     assert demo_db.count('batters') == 0
+
+
+def test_duplicates(demo_db):
+    assert demo_db.count('batters') == 9
+
+    # Insert all the rows again
+    for row in list(demo_db.select('batters')):
+        row = dict(row)
+        row.pop('id')
+        demo_db.insert('batters', row)
+
+    # Add one more for fun
+    demo_db.insert('batters', {'name': 'Abayani', 'hits': 101, 'year': 2000, 'position': Position.LEFT_FIELD})
+
+    assert demo_db.count('batters') == 19
+
+    demo_db.delete_duplicates('batters', ['name', 'hits', 'year'])
+
+    assert demo_db.count('batters') == 10
 
 
 def test_none(demo_db):

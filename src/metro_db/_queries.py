@@ -71,7 +71,7 @@ def generate_clause(self, clause_spec, operator='AND', full=True, table=None):
         return clause
 
 
-def generate_select_query(self, table, fields=[], clause='', order=''):
+def generate_select_query(self, table, fields=[], clause='', order='', group_by=[]):
     query = 'SELECT '
     if fields:
         query += ', '.join(fields)
@@ -81,17 +81,23 @@ def generate_select_query(self, table, fields=[], clause='', order=''):
     if not isinstance(clause, str):
         clause = self.generate_clause(clause, table=table)
     query += clause
+    if group_by:
+        query += ' GROUP BY '
+        if isinstance(group_by, str):
+            query += group_by
+        else:
+            query += ', '.join(group_by)
     if order:
         query += f' ORDER BY {order}'
     return query
 
 
-def select(self, table, fields=[], clause='', order=''):
-    return self.query(self.generate_select_query(table, fields, clause, order))
+def select(self, table, fields=[], clause='', order='', group_by=[]):
+    return self.query(self.generate_select_query(table, fields, clause, order, group_by))
 
 
-def select_one(self, table, fields=[], clause='', order=''):
-    return self.query_one(self.generate_select_query(table, fields, clause, order))
+def select_one(self, table, fields=[], clause='', order='', group_by=[]):
+    return self.query_one(self.generate_select_query(table, fields, clause, order, group_by))
 
 
 def lookup_all(self, field, table, clause='', distinct=False):
@@ -328,3 +334,9 @@ def delete(self, table, clause=''):
     if not isinstance(clause, str):
         clause = self.generate_clause(clause, table=table)
     self.execute(f'DELETE FROM {table} {clause}')
+
+
+def delete_duplicates(self, table, fields, key_field='id'):
+    sub_query = self.generate_select_query(table, [f'MIN({key_field})'], group_by=fields)
+
+    self.delete(table, f'WHERE {key_field} NOT IN ({sub_query})')
