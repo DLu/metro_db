@@ -56,6 +56,14 @@ def test_query_as_list(demo_db):
     assert len(results) == 9
 
     assert results[0]['name'] == 'Olerud'
+    assert results[0]['hits'] == 197
+
+
+def test_full_select(demo_db):
+    results = demo_db.select('batters', ['name', 'SUM(hits)'], 'WHERE year < 2000', '-SUM(hits)', 'name')
+    assert len(results) == 3
+    assert results[0]['name'] == 'Olerud'
+    assert results[0]['SUM(hits)'] == 197 + 173
 
 
 def test_lookup_all(demo_db):
