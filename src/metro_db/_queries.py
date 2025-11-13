@@ -336,7 +336,15 @@ def delete(self, table, clause=''):
     self.execute(f'DELETE FROM {table} {clause}')
 
 
-def delete_duplicates(self, table, fields, key_field='id'):
-    sub_query = self.generate_select_query(table, [f'MIN({key_field})'], group_by=fields)
+def delete_duplicates(self, table, fields, clause=None, key_field='id'):
+    """DELETE rows from the specified table that match all of the given fields.
+
+    Args:
+        table (str): The name of the table
+        fields ([str]): A list of fields from the table
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
+        key_field (str): The name of the unique field to be used for identifying individual rows.
+    """
+    sub_query = self.generate_select_query(table, [f'MIN({key_field})'], clause=clause, group_by=fields)
 
     self.delete(table, f'WHERE {key_field} NOT IN ({sub_query})')
