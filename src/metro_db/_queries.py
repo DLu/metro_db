@@ -71,33 +71,74 @@ def generate_clause(self, clause_spec, operator='AND', full=True, table=None):
         return clause
 
 
-def generate_select_query(self, table, fields=[], clause='', order='', group_by=[]):
-    query = 'SELECT '
-    if fields:
-        query += ', '.join(fields)
+def _format_field_list(fields, no_value='*'):
+    if not fields:
+        return no_value
+    elif isinstance(fields, str):
+        return fields
     else:
-        query += '*'
+        return ', '.join(fields)
+
+
+def generate_select_query(self, table, fields=[], clause='', order=[], grouping=[]):
+    """Generate a string representing a select query
+
+    Args:
+        table (str): The name of the table
+        fields ([str]/str): List of fields (or the name of a single field) to select
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
+        order ([str]/str): List of fields (or the name of a single field) to sort the rows by (i.e. ORDER BY)
+        grouping ([str]/str): List of fields (or the name of a single field) to group the rows by (i.e. GROUP BY)
+
+    Returns:
+        str
+    """
+    query = 'SELECT '
+    query += _format_field_list(fields)
     query += f' FROM {table} '
     if not isinstance(clause, str):
         clause = self.generate_clause(clause, table=table)
     query += clause
-    if group_by:
+    if grouping:
         query += ' GROUP BY '
-        if isinstance(group_by, str):
-            query += group_by
-        else:
-            query += ', '.join(group_by)
+        query += _format_field_list(grouping)
     if order:
-        query += f' ORDER BY {order}'
+        query += ' ORDER BY '
+        query += _format_field_list(order)
+
     return query
 
 
-def select(self, table, fields=[], clause='', order='', group_by=[]):
-    return self.query(self.generate_select_query(table, fields, clause, order, group_by))
+def select(self, table, fields=[], clause='', order=[], grouping=[]):
+    """Run a SELECT command and return the matching rows
+
+    Args:
+        table (str): The name of the table
+        fields ([str]/str): List of fields (or the name of a single field) to select
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
+        order ([str]/str): List of fields (or the name of a single field) to sort the rows by (i.e. ORDER BY)
+        grouping ([str]/str): List of fields (or the name of a single field) to group the rows by (i.e. GROUP BY)
+
+    Returns:
+        iterator: All the rows for the select command
+    """
+    return self.query(self.generate_select_query(table, fields, clause, order, grouping))
 
 
-def select_one(self, table, fields=[], clause='', order='', group_by=[]):
-    return self.query_one(self.generate_select_query(table, fields, clause, order, group_by))
+def select_one(self, table, fields=[], clause='', order=[], grouping=[]):
+    """Run a SELECT command and return the first matching row if available
+
+    Args:
+        table (str): The name of the table
+        fields ([str]/str): List of fields (or the name of a single field) to select
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
+        order ([str]/str): List of fields (or the name of a single field) to sort the rows by (i.e. ORDER BY)
+        grouping ([str]/str): List of fields (or the name of a single field) to group the rows by (i.e. GROUP BY)
+
+    Returns:
+        Row or None
+    """
+    return self.query_one(self.generate_select_query(table, fields, clause, order, grouping))
 
 
 def lookup_all(self, field, table, clause='', distinct=False):
@@ -341,10 +382,10 @@ def delete_duplicates(self, table, fields, clause=None, key_field='id'):
 
     Args:
         table (str): The name of the table
-        fields ([str]): A list of fields from the table
+        fields ([str]/str): List of fields (or the name of a single field) to check the values of
         clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
         key_field (str): The name of the unique field to be used for identifying individual rows.
     """
-    sub_query = self.generate_select_query(table, [f'MIN({key_field})'], clause=clause, group_by=fields)
+    sub_query = self.generate_select_query(table, f'MIN({key_field})', clause=clause, grouping=fields)
 
     self.delete(table, f'WHERE {key_field} NOT IN ({sub_query})')
