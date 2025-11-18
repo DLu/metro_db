@@ -273,3 +273,23 @@ Here's a shortcut for calculating the sum of the values of a column.
 ```python
 avg_score = db.sum('movie', 'score') / db.count('movie')
 ```
+
+### Delete Duplicates
+This method can be used for deleting duplicate rows in any table.
+
+```python
+db.insert('movie', {'title': 'Groundhog Day', 'year': 1993, 'score': 8.0})
+db.insert('movie', {'title': 'Groundhog Day', 'year': 1993, 'score': 9.8})
+db.insert('movie', {'title': 'Groundhog Day', 'year': 1993, 'score': 8.0})
+db.insert('movie', {'title': 'Groundhog Day', 'year': 1993, 'score': 6.0})
+
+# Table movie has four rows matching Groundhog Day
+
+db.delete_duplicates('movie', ['title', 'year', 'score'])
+
+# One row is removed, because the title, year and score are all duplicated.
+
+db.delete_duplicates('movie', ['title', 'year'])
+
+# Only one Groundhog Day row remains, making the combo of title and year unique
+```

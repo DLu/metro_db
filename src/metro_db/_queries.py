@@ -375,3 +375,17 @@ def delete(self, table, clause=''):
     if not isinstance(clause, str):
         clause = self.generate_clause(clause, table=table)
     self.execute(f'DELETE FROM {table} {clause}')
+
+
+def delete_duplicates(self, table, fields, clause=None, key_field='id'):
+    """DELETE rows from the specified table that match all of the given fields.
+
+    Args:
+        table (str): The name of the table
+        fields ([str]/str): List of fields (or the name of a single field) to check the values of
+        clause (str/any): Optional clause to add to query. Use generate_clause to translate to str as needed.
+        key_field (str): The name of the unique field to be used for identifying individual rows.
+    """
+    sub_query = self.generate_select_query(table, f'MIN({key_field})', clause=clause, grouping=fields)
+
+    self.delete(table, f'WHERE {key_field} NOT IN ({sub_query})')

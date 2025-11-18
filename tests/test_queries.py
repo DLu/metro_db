@@ -258,6 +258,25 @@ def test_deletion(demo_db):
     assert demo_db.count('batters') == 0
 
 
+def test_duplicates(demo_db):
+    assert demo_db.count('batters') == 9
+
+    # Insert all the rows again
+    for row in list(demo_db.select('batters')):
+        row = dict(row)
+        row.pop('id')
+        demo_db.insert('batters', row)
+
+    # Add one more for fun
+    demo_db.insert('batters', {'name': 'Abayani', 'hits': 101, 'year': 2000, 'position': Position.LEFT_FIELD})
+
+    assert demo_db.count('batters') == 19
+
+    demo_db.delete_duplicates('batters', ['name', 'hits', 'year'])
+
+    assert demo_db.count('batters') == 10
+
+
 def test_none(demo_db):
     assert demo_db.count('batters', clause={'name': None}) == 0
     demo_db.insert('batters', {'year': 2002, 'hits': 5})
